@@ -1,139 +1,165 @@
 import random
 import pickle
+import string
 
-
-class Ship:
-    def __init__(self, size): # Constructor for the Ship class
-        self.size = size
+grid = [['- ' for i in range(26)] for i in range(26)]
 
 class Player:
-    def __init__(self, name): # Constructor for the Player class
+    def __init__(self, name):  # Constructor for the Player class
         self.name = name
         self.ships = []
         self.destroyedShips = set()
-        self.grid = []
+        self.hiddenGrid = []
 
-    def createGrid(self, size): # Create a grid for the player
-        self.grid = [['O ' for i in range(size)] for i in range(size)]
+    def create_grid(self, size):  # Create a grid for the player
+        self.hiddenGrid = [['- ' for _ in range(size)] for _ in range(size)]
 
-    def placeShips(self, num_ships, max_ship_size, size): # Place ships on the grid
-        for i in range(num_ships): # Loop through the number of ships
-            ship_size = random.randint(1, max_ship_size) # Randomly generate the size of the ship
-            ship = Ship(ship_size)
-            self.ships.append(ship)
-            self.placeShipOnGrids(ship, size) 
+    def place_ships(self, num_ships, max_ship_size, size):  # Place ships on the grid
+        for _ in range(num_ships):  # Loop through the number of ships
+            ship_size = random.randint(1, max_ship_size)  # Randomly generate the size of the ship
+            self.ships.append(ship_size)
+            self.place_ships_on_grids(ship_size, size)
 
-    def placeShipOnGrids(self, ship, size): # Place a ship on the grid
+    def place_ships_on_grids(self, ship_size, size):  # Place a ship on the grid
         while True:
-            x = random.randint(0, size - 1) # Randomly generate the x-coordinate
-            y = random.randint(0, size - 1) # Randomly generate the y-coordinate
-            orientation = random.choice(['horizontal', 'vertical']) # Randomly generate the orientation of the ship
+            x = random.randint(0, size)  # Randomly generate the x-coordinate
+            y = random.randint(0, size)  # Randomly generate the y-coordinate
+            orientation = random.choice(['horizontal', 'vertical'])  # Randomly generate the orientation of the ship
 
-            if self.shipPlacing(ship, x, y, orientation, size): # Check if the ship can be placed on the grid
+            if self.ship_placing(ship_size, x, y, orientation, size):  # Check if the ship can be placed on the grid
                 if orientation == 'horizontal':
-                    for i in range(ship.size): 
-                        self.grid[y][x + i] = 'S '
+                    for i in range(ship_size):
+                        if x + i >= len(grid):
+                            continue
+                        else:
+                            grid[y][x + i] = 'S '
+                            self.hiddenGrid[y][x + i] = 'S '
                 else:
-                    for i in range(ship.size):
-                        self.grid[y + i][x] = 'S '
+                    for i in range(ship_size):
+                        if y + i >= len(grid):
+                            continue
+                        else:
+                            grid[y + i][x] = 'S '
+                            self.hiddenGrid[y + i][x] = 'S '
                 break
-
-    def shipPlacing(self, ship, x, y, orientation, size): # Check if the ship can be placed on the grid
+    def ship_placing(self, ship_size, x, y, orientation, size):  # Check if the ship can be placed on the grid
         if orientation == 'horizontal':
-            if x + ship.size > size: # Check if the ship can be placed horizontally
-                return False
-            for i in range(ship.size):
-                if self.grid[y][x + i] == 'S ':
+            for i in range(ship_size):
+                if y >= size or x + i >= size or grid[y][x + i] == 'S ':
                     return False
         else:
-            if y + ship.size > size: # Check if the ship can be placed vertically
-                return False
-            for i in range(ship.size):
-                if self.grid[y + i][x] == 'S ':
+            for i in range(ship_size):
+                if y + i >= size or x >= size or grid[y + i][x] == 'S ':
                     return False
         return True
-
-    def attack(self, opponent): # Attack the opponent
+    
+    def attack(self, opponent):  # Attack the opponent
         while True:
             try:
-                if self.name == "Computer":  # Check if current player is the computer
-                    x = random.randint(0, len(opponent.grid) - 1) # Randomly generate the x-coordinate for computer
-                    y = random.randint(0, len(opponent.grid) - 1) # Randomly generate the y-coordinate for computer
+                if self.name == "Computer":
+                    x = random.randint(0, len(grid) - 1)  # Randomly generate the x-coordinate for computer
+                    y = random.randint(0, len(grid) - 1)  # Randomly generate the y-coordinate for computer
                 else:
-                    try:
-                        x = int(input("Enter the x-coordinate to attack: "))
-                        y = int(input("Enter the y-coordinate to attack: "))
-                        if x < 0 or y < 0 or x >= len(opponent.grid) or y >= len(opponent.grid): # Check if the coordinates are valid
+                    choice = input("Enter your choice (quit/save/attack <co-ordinates>): ")
+
+                    if choice.lower() == "quit":
+                        exit()
+                    elif choice.lower() == "save":
+                        self.save_game(opponent)
+                        exit()
+
+                    if choice.startswith("attack "):
+                        coordinates = choice.split(" ")[1]
+                        x = string.ascii_uppercase.index(coordinates[0].upper())
+                        y = int(coordinates[1:]) - 1
+                        if x < 0 or y < 0 or x >= len(grid) or y >= len(grid):
                             raise ValueError
 
-                    except ValueError:
-                        print("Invalid coordinates. Try again :<")
+                    else:
+                        print("Invalid choice. Try again :<")
                         continue
-
-                if opponent.grid[y][x] == 'X ' or opponent.grid[y][x] == 'M ': # Check if the coordinates have been attacked or missed
+                if opponent.hiddenGrid[y][x] == 'X ' or opponent.hiddenGrid[y][x] == 'M ':  # Check if the coordinates have been attacked or missed
                     print("You already attacked this coordinate. Try again :<")
                     continue
 
-                if opponent.grid[y][x] == 'S ': # Check if the coordinates have ship
+                if opponent.hiddenGrid[y][x] == 'S ':  # Check if the coordinates have a ship
                     print("You hit an opponent's ship :>")
-                    opponent.grid[y][x] = 'X '
+                    opponent.hiddenGrid[y][x] = 'X '
                     for ship in opponent.ships:
-                        if self.isShipDestroyed(ship, opponent.grid):
+                        if self.is_ship_destroyed(ship, grid):
                             print("\n\t\tYou destroyed an opponent's ship! :>)")
                             self.destroyedShips.add(ship)
                             opponent.ships.remove(ship)
                     break
 
-                if opponent.grid[y][x] == 'O ': # Check if the coordinates have no ship
+                if opponent.hiddenGrid[y][x] == '- ':  # Check if the coordinates have no ship
                     print("You missed!")
-                    opponent.grid[y][x] = 'M '
+                    grid[y][x] = 'M '
                     break
 
             except ValueError:
                 print("Invalid coordinates. Try again :<")
 
-    def isShipDestroyed(self, ship, grid): # Check if the ship is destroyed
+    def is_ship_destroyed(self, ship, grid): # Check if the ship is destroyed
         for i in range(len(grid)):
             for j in range(len(grid)):
                 if grid[i][j] == 'S ' and (i, j) not in self.destroyedShips:
                     return False
         return True
 
-    def displayGrid(self): # Display the grid
+    def display_grid(self): # Display the grid
         size = len(self.grid)
 
         # Display column labels
-        print("  ", end="")
+        print("   ", end="")
         for i in range(size):
-            print(f"{i:2}", end=" ")
+            print(f"{chr(i + ord('A')):2}", end=" ")
         print()
 
         # Display row labels and grid
         for i in range(size):
-            print(f"{i:2}", end=" ")
+            print(f"{i+1:2}", end=" ")
             print(" ".join(self.grid[i]))
 
+    def display_hidden_grid(self,opponent):  # Display the hidden grid
+        size = len(self.hiddenGrid)
+
+        # Display column labels
+        print("   ", end="")
+        for i in range(size):
+            print(f"{chr(i + ord('A')):2}", end=" ")
+        print()
+
+        # Display row labels and grid
+        for i in range(size):
+            print(f"{i + 1:2}", end=" ")
+            for j in range(size):
+                if self.hiddenGrid[i][j] == 'S ' or self.hiddenGrid[i][j] == 'M ' or self.hiddenGrid[i][j] == 'X ':
+                    print(self.hiddenGrid[i][j], end=" ")
+                else:
+                    print(self.hiddenGrid[i][j], end=" ")
+            print()
+
+    def save_game(self, obj2):  # Save the game
+        with open("savegame.pickle", "wb") as file:
+            pickle.dump(obj2, file)
+            pickle.dump(self, file)
+        print("\t\tGame saved successfully :>)")
 
 
-def displayMenu():
+def display_menu():
     print("\t\t----== Battle Ships Menu ----==")
     print("\t\t1. New Game")
     print("\t\t2. Load Game")
     print("\t\t3. Quit")
 
 
-def displayMenu2():
+def display_menu2():
     print("\t\t 1. Play with a friend")
     print("\t\t 2. Play with a computer")
     print("\t\t 3. Back to main menu")
 
-def saveGame(obj1,obj2): # Save the game
-    with open("savegame.pickle", "wb") as file: 
-        pickle.dump(obj1, file)
-        pickle.dump(obj2, file)
-    print("\t\tGame saved successfully :>)")
-
-def loadGame(): # Load the game
+def load_game(): # Load the game
     try:
         list=[]
         with open("savegame.pickle", "rb") as file:
@@ -147,12 +173,12 @@ def loadGame(): # Load the game
         return None
 def main():
     while True:
-        displayMenu()
+        display_menu()
         choice = input("\t\tEnter your choice: ")
 
         if choice == '1':
             while True:
-                displayMenu2()
+                display_menu2()
                 choice = input("\t\tEnter your choice: ")
                 if choice == '1':
                     p = input("\t\tPlayer 1 Enter your name :) ")
@@ -160,16 +186,16 @@ def main():
                     player1 = Player(p)
                     player2 = Player(p2)
 
-                    player1.createGrid(26)
-                    player2.createGrid(26)
+                    player1.create_grid(26)
+                    player2.create_grid(26)
 
-                    player1.placeShips(6, 7, 26)
-                    player2.placeShips(6, 7, 26)
+                    player1.place_ships(6, 7, 26)
+                    player2.place_ships(6, 7, 26)
 
                     while True:
                         print(f"\n\t\t---- {player1.name} Turn ----")
-                        print(f"\t\t {player1.name} Grid: \n")
-                        player1.displayGrid()
+                        print(f"\t\t{player1.name} Grid: \n")
+                        player1.display_hidden_grid(player2)
                         player1.attack(player2)
 
                         if not player2.ships:
@@ -178,40 +204,28 @@ def main():
 
                         print(f"\n\t\t---- {player2.name} Turn ----")
                         print(f"\t\t{player2.name} Grid: \n")
-                        player2.displayGrid()
+                        player2.display_hidden_grid(player1)
                         player2.attack(player1)
 
                         if not player1.ships:
                             print(f"\t\t\tKudos {player2.name} You wins! :>)")
                             break
-                        while True:
-                            print("\n\t\t Do you want to save the game? (y/n) :>")
-                            print("\t\t Quit the game? (q) :>s")
-                            saveChoice = input("\n\t\t Enter your choice:> ")
-                            if saveChoice.lower() == 'y':
-                                saveGame(player1, player2)
-                            elif saveChoice.lower() == 'n':
-                                break
-                            elif saveChoice.lower() == 'q':
-                                exit()
-                            else:
-                                print("\t\tInvalid choice. Try again :<")
-                                continue
+    
                 elif choice == '2':
                     p = input("\t\tEnter your name :) ")
                     player1 = Player(p)
                     player2 = Player("Computer")  # Create a computer player
 
-                    player1.createGrid(26)
-                    player2.createGrid(26)
+                    player1.create_grid(26)
+                    player2.create_grid(26)
 
-                    player1.placeShips(6, 7, 26)
-                    player2.placeShips(6, 7, 26)
+                    player1.place_ships(6, 7, 26)
+                    player2.place_ships(6, 7, 26)
 
                     while True:
                         print(f"\n\t\t---- {player1.name} Turn ----")
                         print(f"\t\t{player1.name} Grid: \n")
-                        player1.displayGrid()
+                        player1.display_hidden_grid(player2)
                         player1.attack(player2)
 
                         if not player2.ships:
@@ -225,29 +239,23 @@ def main():
                             print("\t\t\tComputer wins :>\n Better luck next time :<")
                             break
 
-                        saveChoice = input("\n\t\tDo you want to save the game? (y/n) :> ")
-                        if saveChoice.lower() == 'y':
-                            saveGame(player1,player2)
-                            break
                 elif choice == '3':
                     break
                 else:
                     print("\n\t\tInvalid choice. Try again :<")
 
         elif choice == '2':
-            saved_game = loadGame()
+            saved_game = load_game()
             if saved_game:
                 player1 = saved_game[0]
                 player2 = saved_game[1]
 
-                player2.createGrid(26)
-                player2.placeShips(6, 7, 26)
 
                 while True:
                     print(f"\n\t\t---- {player1.name} Turn ----")
                     print(f"\t\t{player1.name} Grid: \n")
-                    player1.displayGrid()
-                    player1.attack(player2)
+                    player1.display_hidden_grid(player1)
+                    player1.attack(player1)
 
                     if not player2.ships:
                         print(f"\n\t\tKudos {player1.name} You wins! :>)")
@@ -255,16 +263,11 @@ def main():
 
                     print(f"\n\t\t---- {player2.name} Turn ----")
                     print(f"\t\t{player2.name} Grid: \n")
-                    player2.displayGrid()
+                    player2.display_hidden_grid(player1)
                     player2.attack(player1)
 
                     if not player1.ships:
                         print(f"\n\t\tKudos {player2.name} You wins! :>)")
-                        break
-
-                    saveChoice = input("\n\t\tDo you want to save the game? (y/n) :> ")
-                    if saveChoice.lower() == 'y':
-                        saveGame(player1,player2)
                         break
 
         elif choice == '3':
