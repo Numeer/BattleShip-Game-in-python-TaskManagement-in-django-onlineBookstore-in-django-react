@@ -9,7 +9,6 @@ class Player:
     def __init__(self, name):  # Constructor for the Player class
         self.name = name
         self.ships = []
-        self.destroyed_ships = set()
 
     def place_ships(self, num_ships, max_ship_size, size):  # Place ships on the grid
         for _ in range(num_ships):  # Loop through the number of ships
@@ -66,10 +65,9 @@ class Player:
 
     def destroy_ships(self, opponent):  # Check if any of the opponent's ships are destroyed and update the state
         for ship in opponent.ships:
-            if self.is_ship_destroyed(ship):
-                print("\n\t\tYou destroyed an opponent's ship! :>)")
-                self.destroyed_ships.add(ship)
-                opponent.ships.remove(ship)
+            if self.is_ship_destroyed():
+                print(f"\n\t\tYou destroyed {self.name} ships! :>)")
+                return True
 
     def hit_own_ship(self, x, y):  # Check if the coordinates have the player's own ship
         return grid[y][x] == 'S ' + self.name
@@ -77,12 +75,13 @@ class Player:
     def mark_missed(self, x, y):  # Mark the coordinates as missed
         grid[y][x] = 'M '
 
-    def is_ship_destroyed(self, ship):  # Check if the ship is destroyed
+    def is_ship_destroyed(self):  # Check if the ship is destroyed
         for i in range(GRID_SIZE):
             for j in range(GRID_SIZE):
-                if grid[i][j] == 'S ' + self.name and (i, j) not in self.destroyed_ships:
+                if grid[i][j] == 'S ' + self.name and (i, j):
                     return False
         return True
+       
 
     def attack(self, opponent):
         while True:
@@ -112,8 +111,10 @@ class Player:
                     continue
 
                 if self.hit_opponent_ship(x, y, opponent):
-                    print("You hit an opponent's ship :>")
-                    self.destroy_ships(opponent)
+                    print(f"You hit {opponent.name}'s ship :>")
+                    if opponent.destroy_ships(self):
+                        break
+                    
                 elif self.hit_own_ship(x, y):
                     print("You can't hit your own ship :<")
                     continue
@@ -124,13 +125,6 @@ class Player:
                 break
             except ValueError:
                 print("Invalid coordinates. Try again :<")
-
-    def is_ship_destroyed(self, ship):  # Check if the ship is destroyed
-        for i in range(len(grid)):
-            for j in range(len(grid)):
-                if grid[i][j] == 'S '+self.name and (i, j) not in self.destroyed_ships:
-                    return False
-        return True
 
     def display_grid(self,opponent):  # Display the grid
         size = len(grid)
@@ -162,7 +156,7 @@ class Player:
         print("\t\tGame saved successfully :>)")
        
     def win_game(self,opponent):
-        if not opponent.ships:
+        if opponent.is_ship_destroyed():
             print(f"\t\t\tKudos {self.name} wins! :>)")
             return True
         return False
@@ -199,20 +193,23 @@ def load_game(): # Load the game
         return None
     
 def check_win(player1,player2):
+    flag = False
     while True:
         player1.turn_grid()
         player1.display_grid(player2)
         player1.attack(player2)
 
         if player1.win_game(player2):
-            break
+            flag =  True
+            return flag
         
         player2.turn_grid()
         player2.display_grid(player1)
         player2.attack(player1)
 
         if player2.win_game(player1):
-            break
+            flag =  True
+            return flag
 
 def play_game(ships,ships_size,size,choice):
     opponent = input("\t\tPlayer 1 Enter your name :) ")
@@ -236,14 +233,15 @@ def play_game(ships,ships_size,size,choice):
     player1.place_ships(ships,ships_size,size)
     player2.place_ships(ships,ships_size,size)
 
-    check_win(player1,player2)
+    if check_win(player1,player2):
+        exit()
 
 def main():
     while True:
         display_menu()
         choice = input("\t\tEnter your choice: ")
-        ships  =  6
-        ships_size = 5
+        ships  =  2
+        ships_size = 1
         size = 26
         if choice == '1':
             while True:
