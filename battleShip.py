@@ -4,10 +4,7 @@ import string
 
 grid_size = 26
 grid = [['- ' for i in range(grid_size)] for i in range(grid_size)]
-# with open("savegame.txt", "w") as file:
-#     file.writelines(str(grid))
-# with open("savegame.txt", "r") as file:
-#     grid = file.readlines()
+print(grid)
 class Player:
     def __init__(self, name):  # Constructor for the Player class
         self.name = name
@@ -126,9 +123,10 @@ class Player:
         with open("savegame.pickle", "wb") as file:
             pickle.dump(obj2, file)
             pickle.dump(self, file)
+            pickle.dump(grid, file) # Save the grid
+            
         print("\t\tGame saved successfully :>)")
-        with open("savegame.txt", "w") as file:
-            file.writelines(str(grid))
+       
     def win_game(self,opponent):
         if not opponent.ships:
             print(f"\t\t\tKudos {self.name} wins! :>)")
@@ -158,10 +156,8 @@ def load_game(): # Load the game
             list.append(p1)
             p2=pickle.load(file)
             list.append(p2)
-        with open("savegame.txt", "r") as file:
-            grid=file.readlines()
-            print(grid)
-            print(type(grid))
+            global grid
+            grid=pickle.load(file)
             return list
     except FileNotFoundError:
         print("No saved game found :<(")
