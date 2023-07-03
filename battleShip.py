@@ -25,10 +25,10 @@ class Player:
             if self.ship_placing(ship_size, x, y, orientation, size):
                 if orientation == 'horizontal':
                     for i in range(ship_size):
-                        grid[y][x + i] = 'S ' + self.name[0]  # append the first letter of the name to the grid
+                        grid[y][x + i] = 'S ' + self.name  # append the first letter of the name to the grid
                 else:
                     for i in range(ship_size):
-                        grid[y + i][x] = 'S ' + self.name[0]  # append the first letter of the name to the grid
+                        grid[y + i][x] = 'S ' + self.name  # append the first letter of the name to the grid
                 break
 
     def ship_placing(self, ship_size, x, y, orientation, size):  # Check if the ship can be placed on the grid
@@ -59,7 +59,7 @@ class Player:
         return grid[y][x] == 'X ' or grid[y][x] == 'M '
 
     def hit_opponent_ship(self, x, y, opponent):  # Check if the coordinates have an opponent's ship and mark it as hit
-        if grid[y][x] == 'S ' + opponent.name[0]:
+        if grid[y][x] == 'S ' + opponent.name:
             grid[y][x] = 'X '
             return True
         return False
@@ -72,7 +72,7 @@ class Player:
                 opponent.ships.remove(ship)
 
     def hit_own_ship(self, x, y):  # Check if the coordinates have the player's own ship
-        return grid[y][x] == 'S ' + self.name[0]
+        return grid[y][x] == 'S ' + self.name
 
     def mark_missed(self, x, y):  # Mark the coordinates as missed
         grid[y][x] = 'M '
@@ -80,7 +80,7 @@ class Player:
     def is_ship_destroyed(self, ship):  # Check if the ship is destroyed
         for i in range(GRID_SIZE):
             for j in range(GRID_SIZE):
-                if grid[i][j] == 'S ' + self.name[0] and (i, j) not in self.destroyed_ships:
+                if grid[i][j] == 'S ' + self.name and (i, j) not in self.destroyed_ships:
                     return False
         return True
 
@@ -128,7 +128,7 @@ class Player:
     def is_ship_destroyed(self, ship):  # Check if the ship is destroyed
         for i in range(len(grid)):
             for j in range(len(grid)):
-                if grid[i][j] == 'S '+self.name[0] and (i, j) not in self.destroyed_ships:
+                if grid[i][j] == 'S '+self.name and (i, j) not in self.destroyed_ships:
                     return False
         return True
 
@@ -145,9 +145,9 @@ class Player:
         for i in range(size):
             print(f"{i+1:2}", end=" ")
             for j in range(size):
-                if grid[i][j] == 'S '+ opponent.name[0]: # if the owner is not the current player print -
+                if grid[i][j] == 'S '+ opponent.name: # if the owner is not the current player print -
                     print("- ", end=" ")
-                elif grid[i][j] == 'S '+ self.name[0]: # if the owner is the current player print S
+                elif grid[i][j] == 'S '+ self.name: # if the owner is the current player print S
                     print("S ", end=" ")
                 else:
                     print(grid[i][j], end=" ")
@@ -216,8 +216,14 @@ def check_win(player1,player2):
 
 def play_game(ships,ships_size,size,choice):
     opponent = input("\t\tPlayer 1 Enter your name :) ")
+    flag=True
     if choice != '2':
         opponent2 = input("\t\tPlayer 2 Enter your name :) ")
+    while flag:
+        if opponent2 == opponent:
+            print("\t\tName already taken. Try again :<")
+            opponent2 = input("\t\tPlayer 2 Enter your name :) ")
+        flag=False
     else:
         player2 = Player("Computer")  # Create a computer player
 
