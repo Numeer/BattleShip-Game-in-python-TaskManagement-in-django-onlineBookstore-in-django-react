@@ -10,18 +10,18 @@ class Player:
         self.name = name
         self.ships = []
 
-    def place_ships(self, num_ships, max_ship_size, size):  # Place ships on the grid
+    def place_ships(self, num_ships, max_ship_size):  # Place ships on the grid
         for _ in range(num_ships):  # Loop through the number of ships
             ship_size = random.randint(1, max_ship_size)  # Randomly generate the size of the ship
             self.ships.append(ship_size)
-            self.place_ships_on_grids(ship_size, size)
+            self.place_ships_on_grids(ship_size)
 
-    def place_ships_on_grids(self, ship_size, size):  # Place a ship on the grid
+    def place_ships_on_grids(self, ship_size):  # Place a ship on the grid
         while True:
             x, y = self.generate_random_coordinates() 
             orientation = random.choice(['horizontal', 'vertical'])
 
-            if self.ship_placing(ship_size, x, y, orientation, size):
+            if self.ship_placing(ship_size, x, y, orientation):
                 if orientation == 'horizontal':
                     for i in range(ship_size):
                         grid[y][x + i] = 'S ' + self.name  # append the first letter of the name to the grid
@@ -30,14 +30,14 @@ class Player:
                         grid[y + i][x] = 'S ' + self.name  # append the first letter of the name to the grid
                 break
 
-    def ship_placing(self, ship_size, x, y, orientation, size):  # Check if the ship can be placed on the grid
+    def ship_placing(self, ship_size, x, y, orientation,):  # Check if the ship can be placed on the grid
         if orientation == 'horizontal':
             for i in range(ship_size):
-                if y >= size or x + i >= size or grid[y][x + i] == 'S ':
+                if y >= GRID_SIZE or x + i >= GRID_SIZE or grid[y][x + i] == 'S ':
                     return False
         else:
             for i in range(ship_size):
-                if y + i >= size or x >= size or grid[y + i][x] == 'S ':
+                if y + i >= GRID_SIZE or x >= GRID_SIZE or grid[y + i][x] == 'S ':
                     return False
         return True
     
@@ -119,7 +119,7 @@ class Player:
                     print("You can't hit your own ship :<")
                     continue
                 else:
-                    print("You missed!")
+                    print(f"{self.name} You missed!")
                     self.mark_missed(x, y)
 
                 break
@@ -176,7 +176,8 @@ def display_menu2():
     print("\t\t 1. Play with a friend")
     print("\t\t 2. Play with a computer")
     print("\t\t 3. Back to main menu")
-
+    
+    
 def load_game(): # Load the game
     try:
         list=[]
@@ -192,7 +193,8 @@ def load_game(): # Load the game
         print("No saved game found :<(")
         return None
     
-def check_win(player1,player2):
+    
+def check_win(player1,player2,choice):
     flag = False
     while True:
         player1.turn_grid()
@@ -200,58 +202,62 @@ def check_win(player1,player2):
         player1.attack(player2)
 
         if player1.win_game(player2):
-            flag =  True
+            flag = True
             return flag
         
-        player2.turn_grid()
-        player2.display_grid(player1)
+        if choice != '2':
+            player2.turn_grid()
+            player2.display_grid(player1)
+
         player2.attack(player1)
 
         if player2.win_game(player1):
-            flag =  True
+            flag = True
             return flag
 
-def play_game(ships,ships_size,size,choice):
+def play_game(ships,ships_size,choice):
     opponent = input("\t\tPlayer 1 Enter your name :) ")
     flag=True
     if choice != '2':
         opponent2 = input("\t\tPlayer 2 Enter your name :) ")
-    while flag:
-        if opponent2 == opponent:
-            print("\t\tName already taken. Try again :<")
-            opponent2 = input("\t\tPlayer 2 Enter your name :) ")
-        flag=False
+        while flag:
+            if opponent2 == opponent:
+                print("\t\tName already taken. Try again :<")
+                opponent2 = input("\t\tPlayer 2 Enter your name :) ")
+            flag=False
     else:
+        while flag:
+            if opponent == "Computer":
+                print("\t\tName already taken. Try again :<")
+                opponent2 = input("\t\tPlayer 1 Enter your name :) ")
+            flag=False
         player2 = Player("Computer")  # Create a computer player
 
     player1 = Player(opponent)
     if choice != '2':     
         player2 = Player(opponent2)
-    else:
-        player2 = Player("Computer")
 
-    player1.place_ships(ships,ships_size,size)
-    player2.place_ships(ships,ships_size,size)
+    player1.place_ships(ships,ships_size)
+    player2.place_ships(ships,ships_size)
 
-    if check_win(player1,player2):
+    if check_win(player1,player2,choice):
         exit()
 
 def main():
     while True:
         display_menu()
         choice = input("\t\tEnter your choice: ")
-        ships  =  2
-        ships_size = 1
-        size = 26
+        ships =  6 #no  of ships per player
+        ships_size = 5 #size of each ship it is random from 1 to 5 in place_ships function
         if choice == '1':
             while True:
                 display_menu2()
                 choice = input("\t\tEnter your choice: ")
                 if choice == '1':
-                    play_game(ships,ships_size,size,choice)
+                    play_game(ships,ships_size,choice)
     
                 elif choice == '2':
-                   play_game(ships,ships_size,size,choice)
+                   play_game(ships,ships_size,choice)
 
                 elif choice == '3':
                     break
@@ -263,7 +269,7 @@ def main():
             if saved_game:
                 player1 = saved_game[0]
                 player2 = saved_game[1]
-                check_win(player1,player2)
+                check_win(player1,player2,choice)
 
         elif choice == '3':
             print("\n\t\tThank you for playing :)")
@@ -275,4 +281,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
