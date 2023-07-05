@@ -34,12 +34,8 @@ class Player:
                         grid[y + i][x] = 'S ' + self.name
                 break
 
-<<<<<<< HEAD
     # Check if the ship can be placed on the grid
     def ship_placing(self, ship_size, x, y, orientation, ):
-=======
-    def ship_placing(self, ship_size, x, y, orientation, ):  # Check if the ship can be placed on the grid
->>>>>>> 98d4dd8ae7080a907c3b19e360220c887e05c626
         if orientation == 'horizontal':
             for i in range(ship_size):
                 if y >= GRID_SIZE or x + i >= GRID_SIZE or grid[y][x + i] == 'S ':
@@ -50,12 +46,8 @@ class Player:
                     return False
         return True
 
-<<<<<<< HEAD
     # Generate random coordinates for computer's attack
     def generate_random_coordinates(self):
-=======
-    def generate_random_coordinates(self):  # Generate random coordinates for computer's attack
->>>>>>> 98d4dd8ae7080a907c3b19e360220c887e05c626
         x = random.randint(0, GRID_SIZE - 1)
         y = random.randint(0, GRID_SIZE - 1)
         return x, y
@@ -87,6 +79,7 @@ class Player:
             if self.is_ship_destroyed():
                 print(f"\n\t\tYou destroyed {self.name} ships! :>)")
                 return True
+        return False
 
     def hit_own_ship(self, x, y):  # Check if the coordinates have the player's own ship
         return grid[y][x] == 'S ' + self.name
@@ -159,17 +152,11 @@ class Player:
         for i in range(size):
             print(f"{i + 1:2}", end=" ")
             for j in range(size):
-<<<<<<< HEAD
                 # if the owner is not the current player print -
                 if grid[i][j] == 'S ' + opponent.name:
                     print("- ", end=" ")
                 # if the owner is the current player print S
                 elif grid[i][j] == 'S ' + self.name:
-=======
-                if grid[i][j] == 'S ' + opponent.name:  # if the owner is not the current player print -
-                    print("- ", end=" ")
-                elif grid[i][j] == 'S ' + self.name:  # if the owner is the current player print S
->>>>>>> 98d4dd8ae7080a907c3b19e360220c887e05c626
                     print("S ", end=" ")
                 else:
                     print(grid[i][j], end=" ")
