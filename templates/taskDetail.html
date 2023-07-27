@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Task Detail</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/css/bootstrap.min.css"
+          integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <style>
+        .messages {
+            list-style-type: none;
+            margin: 10px 0;
+            padding: 0;
+        }
+
+        .messages li {
+            padding: 8px 16px;
+            border-radius: 4px;
+            margin-bottom: 5px;
+        }
+
+        .error {
+            background-color: #f44336;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+{% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+        {% endfor %}
+    </ul>
+{% endif %}
+<div class="container mt-4">
+    {% csrf_token %}
+    <h1>Task Detail</h1>
+
+    <p><strong>Title:</strong> {{ task.title }}</p>
+    <p><strong>Description:</strong> {{ task.description }}</p>
+    <p><strong>Due Date:</strong> {{ task.due_date }}</p>
+    <p><strong>Status:</strong> {{ task.status }}</p>
+    <p><strong>Assigned To:</strong> {{ task.assigned_user }}</p>
+    <p><strong>Assigned By:</strong> {{ task.created_by }}</p>
+
+    <h4>Comments:</h4>
+    <ul>
+        {% for comment in comments %}
+            <li>
+                <strong>{{ comment.user.username }}:</strong> {{ comment.text }}
+                <small>{{ comment.created_at }}</small>
+            </li>
+        {% endfor %}
+    </ul>
+
+    <form method="post" action="{% url 'addComment' task_id=task.id %}">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="comment">Add Comment:</label>
+            <textarea name="comment" rows="4" class="form-control" required></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Add Comment</button>
+    </form>
+
+    <form method="post" enctype="multipart/form-data" action="{% url 'uploadAttachment' task_id=task.id %}">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="attachment">Upload Attachment:</label>
+            <input type="file" name="attachment" id="attachment" class="form-control-file" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Upload Attachment</button>
+    </form>
+
+    <br>
+    <a href="{% url 'delete' task.id %}" class="btn btn-danger">Delete Task</a>
+    <a href="{% url 'update' task.id %}" class="btn btn-primary">Update Task</a>
+    <a href="{% url 'list' %}" class="btn btn-secondary">Task List</a>
+</div>
+</body>
+</html>

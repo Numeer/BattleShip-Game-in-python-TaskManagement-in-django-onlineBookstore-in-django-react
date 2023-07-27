@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Create Task</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/css/bootstrap.min.css"
+          integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <style>
+        .container {
+            padding: 20px;
+            background-color: #f1f1f1;
+            text-align: center;
+            max-width: 500px;
+            margin: 0 auto;
+            border-radius: 5px;
+            margin-top: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    {% if error %}
+        <div class="alert alert-danger" role="alert">
+            {{ error }}
+        </div>
+    {% endif %}
+    <h1>Create Task</h1>
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="title">Title:</label>
+            <input type="text" name="title" class="form-control" required>
+        </div>
+
+        <div class="form-group">
+            <label for="desc">Description:</label>
+            <textarea name="desc" rows="4" class="form-control" required></textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="dueDate">Due Date:</label>
+            <input type="datetime-local" name="dueDate" class="form-control" required>
+        </div>
+
+        <div class="form-group">
+            <label for="assignTo">Assign To:</label>
+            <select name="assignTo" class="form-control" required>
+                {% for user in available_users %}
+                    <option value="{{ user.username }}">{{ user.username }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Create Task</button>
+    </form>
+</div>
+</body>
+</html>
