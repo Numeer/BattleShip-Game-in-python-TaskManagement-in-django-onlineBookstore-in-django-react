@@ -3,12 +3,11 @@ from django.contrib import messages
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth import authenticate, login, logout, get_user_model
 from django.contrib.auth.decorators import login_required
+from django.utils import timezone
+
 from .models import *
 from django import forms
 
-
-class TaskSearchForm(forms.Form):
-    search_query = forms.CharField(max_length=100, required=False)
 
 
 def send_task_notification_email(subject, message, recipient_list):
@@ -27,11 +26,11 @@ def home_page(request):
 
 
 def signup_page(request):
-    subject = 'subject'
-    message = 'message'
-    from_email = 'numeer.qadri@arbisoft.com'
-    recipient_list = ['qaadrinumeer@gmail.com']
-    send_mail(subject, message, from_email, recipient_list)
+    # subject = 'subject'
+    # message = 'message'
+    # from_email = 'numeer.qadri@arbisoft.com'
+    # recipient_list = ['qaadrinumeer@gmail.com']
+    # send_mail(subject, message, from_email, recipient_list)
     if request.method == 'POST':
         uname = request.POST.get('fullname')
         email = request.POST.get('email')
@@ -76,10 +75,9 @@ def create_task(request):
         description = request.POST.get('desc')
         due_date = request.POST.get('dueDate')
         assign_to_username = request.POST.get('assignTo')
-
         assign_to_user = User.objects.get(username=assign_to_username)
 
-        Task.objects.create(
+        task = Task.objects.create(
             title=title,
             description=description,
             due_date=due_date,
@@ -87,13 +85,19 @@ def create_task(request):
             assigned_user=assign_to_user,
             created_by=request.user
         )
+        print("hello")
+        if 'attachment' in request.FILES:
+            uploaded_file = request.FILES['attachment']
+            print(uploaded_file)
+            attachment = Attachment(task=task, file=uploaded_file)
+            attachment.save()
 
         # Send email notification to the assigned user
-        subject = 'New Task Assigned'
-        message = f'A new task has been assigned to you. Task Title: {title}'
-        recipient_list = [assign_to_user.email]
-        print(recipient_list)
-        send_task_notification_email(subject, message, recipient_list)
+        # subject = 'New Task Assigned'
+        # message = f'A new task has been assigned to you. Task Title: {title}'
+        # recipient_list = [assign_to_user.email]
+        # print(recipient_list)
+        # send_task_notification_email(subject, message, recipient_list)
 
         return redirect('list')
     else:
@@ -103,14 +107,46 @@ def create_task(request):
 
 @login_required(login_url='login')
 def task_list_view(request):
-    tasks = Task.objects.all().order_by('due_date', 'status')
-    assigned_task_user = []
+    if request.method == 'POST':
+        status = request.POST.get('status')
+        end_date = request.POST.get('end_date')
+        assigned_user = request.POST.get('assigned_user')
+        Flag = True
+        if status and status != "No":
+            Flag = False
+            tasks = Task.objects.all().filter(status=status)
+        if end_date and end_date != "":
+            Flag = False
+            due = timezone.datetime.strptime(end_date, '%Y-%m-%d')
+            tasks = Task.objects.all().filter(due_date__date__lte=due.date())
+        if assigned_user and assigned_user != "No":
+            Flag = False
+            tasks = Task.objects.all().filter(assigned_user__username=assigned_user)
+            # pass
+        if Flag:
+            tasks = Task.objects.all().order_by('due_date', 'status')
+            assigned_task_user = []
+            for task in tasks:
+                if task.assigned_user.id == request.user.id:
+                    assigned_task_user.append(task.assigned_user.id)
+            available_users = User.objects.all()
+            return render(request, 'taskList.html',
+                          {'tasks': tasks, 'assigned_task_user': assigned_task_user,
+                           'available_users': available_users})
+        elif not Flag:
+            available_users = User.objects.all()
+            return render(request, 'taskList.html', {'tasks': tasks, 'available_users': available_users})
 
-    for task in tasks:
-        if task.assigned_user.id == request.user.id:
-            assigned_task_user.append(task.assigned_user.id)
+    else:
+        tasks = Task.objects.all().order_by('due_date', 'status')
 
-    return render(request, 'taskList.html', {'tasks': tasks, 'assigned_task_user': assigned_task_user})
+        assigned_task_user = []
+        for task in tasks:
+            if task.assigned_user.id == request.user.id:
+                assigned_task_user.append(task.assigned_user.id)
+        available_users = User.objects.all()
+        return render(request, 'taskList.html',
+                  {'tasks': tasks, 'assigned_task_user': assigned_task_user, 'available_users': available_users})
 
 
 @login_required(login_url='login')

@@ -50,7 +50,22 @@
             </li>
         {% endfor %}
     </ul>
-
+    {% if task.assigned_user == request.user %}
+        <h4>Attachments:</h4>
+        <ul>
+            {% for attachment in task.attachments.all %}
+               {% if attachment.file.url|lower|slice:'-4:' == '.jpg' or attachment.file.url|lower|slice:'-5:' == '.jpeg' or attachment.file.url|lower|slice:'-4:' == '.png' or attachment.file.url|lower|slice:'-4:' == '.gif' or attachment.file.url|lower|slice:'-4:' == '.pdf'%}
+                    <li>
+                        <img src="{{ attachment.file.url }}" alt="{{ attachment.file.name }}" width="200">
+                    </li>
+                {% else %}
+                    <li>
+                        <a href="{{ attachment.file.url }}" target="_blank">{{ attachment.file.name }}</a>
+                    </li>
+                {% endif %}
+            {% endfor %}
+        </ul>
+    {% endif %}
     <form method="post" action="{% url 'addComment' task_id=task.id %}">
         {% csrf_token %}
         <div class="form-group">
@@ -59,6 +74,8 @@
         </div>
         <button type="submit" class="btn btn-primary">Add Comment</button>
     </form>
+
+
     <br>
     <a href="{% url 'delete' task.id %}" class="btn btn-danger">Delete Task</a>
     <a href="{% url 'update' task.id %}" class="btn btn-primary">Update Task</a>

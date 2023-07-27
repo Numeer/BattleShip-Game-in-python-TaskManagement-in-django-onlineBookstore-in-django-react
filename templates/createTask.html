@@ -28,7 +28,7 @@
         </div>
     {% endif %}
     <h1>Create Task</h1>
-    <form method="post">
+   <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         <div class="form-group">
             <label for="title">Title:</label>
@@ -53,7 +53,10 @@
                 {% endfor %}
             </select>
         </div>
-
+        <div class="form-group">
+            <label for="attachment">Attachment:</label>
+        <input type="file" name="attachment" id="attachment">
+        </div>
         <button type="submit" class="btn btn-primary">Create Task</button>
     </form>
 </div>
