@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Update Task</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+</head>
+<body>
+    <div class="container mt-4">
+        <h1>Update Task</h1>
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="title">Title:</label>
+                <input type="text" name="title" value="{{ task.title }}" class="form-control" required>
+            </div>
+
+            <div class="form-group">
+                <label for="desc">Description:</label>
+                <textarea name="desc" rows="4" class="form-control" required>{{ task.description }}</textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="dueDate">Due Date:</label>
+                <input type="datetime-local" name="dueDate" value="{{ task.due_date|date:'Y-m-d\TH:i' }}" class="form-control" required>
+            </div>
+
+            <div class="form-group">
+                <label for="status">Status:</label>
+                <select name="status" class="form-control" required>
+                    <option value="New" {% if task.status == 'new' %}selected{% endif %}>New</option>
+                    <option value="In progress" {% if task.status == 'in_progress' %}selected{% endif %}>In Progress</option>
+                    <option value="Completed" {% if task.status == 'completed' %}selected{% endif %}>Completed</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Update Task</button>
+        </form>
+    </div>
+</body>
+</html>
