@@ -205,6 +205,7 @@ def delete_task(request, task_id):
     if task.created_by == request.user or request.user.is_superuser:
         if request.method == 'POST':
             task.delete()
+            messages.error(request, 'Task deleted Successfully!')
             return redirect('list')
         else:
             return render(request, 'delete.html', {'task': task})

@@ -11,7 +11,10 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 import os
 from pathlib import Path
-
+import environ
+env = environ.Env()
+environ.Env.read_env()
+# from dotenv import load_dotenv
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -19,11 +22,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-x2rpfqcus!&!%@a#q#x%m%d7kr6#aa05!=8(xtzy834!(q_sv!'
-
+SECRET_KEY = os.environ.get('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
+DEBUG = os.environ.get('DEBUG')
 ALLOWED_HOSTS = []
 
 # Application definition
@@ -53,7 +54,7 @@ ROOT_URLCONF = 'TaskManagement.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': ['templates']
+        'DIRS': ['app/templates']
         ,
         'APP_DIRS': True,
         'OPTIONS': {
@@ -74,12 +75,12 @@ WSGI_APPLICATION = 'TaskManagement.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'taskManagement',
-        'USER': 'root',
-        'PASSWORD': '1234',
-        'PORT': 3306,
-        'HOST': '127.0.0.1',
+        'ENGINE': "django.db.backends.mysql",
+        'NAME': os.environ.get('NAME'),
+        'USER': os.environ.get('DB_USER'),
+        'PASSWORD': os.environ.get('PASSWORD'),
+        'PORT': os.environ.get('PORT'),
+        'HOST': os.environ.get('HOST'),
     }
 }
 
@@ -112,17 +113,18 @@ USE_I18N = True
 
 USE_TZ = True
 
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 465
-EMAIL_USE_SSL = True
-EMAIL_HOST_USER = 'numeer.qadri@arbisoft.com'
-EMAIL_HOST_PASSWORD = 'sjyyvjuwuepwiket'
+# EMAIL_BACKEND = os.environ.get('EMAIL_BACKEND')
+# EMAIL_HOST = os.environ.get('EMAIL_HOST')
+# EMAIL_PORT = os.environ.get('PORT')
+# EMAIL_USE_SSL = os.environ.get('EMAIL_USE_SSL')
+# EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
+# EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'app/static')
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')

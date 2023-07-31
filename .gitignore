@@ -1,6 +1,7 @@
 .DS_Store
 .idea
-venv
+.env/
+venv/
 battleShip.py
 db.sqlite3
 README.md

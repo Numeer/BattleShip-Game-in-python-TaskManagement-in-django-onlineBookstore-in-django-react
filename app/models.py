@@ -3,34 +3,36 @@ from django.contrib.auth.models import User
 
 
 class CustomUser(User):
-    ADMIN = 'admin'
-    MANAGER = 'manager'
-    REGULAR = 'regular'
+    MANAGER = 'M'
+    REGULAR = 'R'
 
     ROLE_CHOICES = (
-        (ADMIN, 'Admin'),
         (MANAGER, 'Manager'),
-        (REGULAR, 'Regular User'),
+        (REGULAR, 'Regular'),
     )
 
     role = models.CharField(
-        max_length=10,
+        max_length=1,
         choices=ROLE_CHOICES,
         default=REGULAR,
     )
 
 
 class Task(models.Model):
+    NEW = 'N'
+    INPROGRESS = 'IP'
+    COMPLETED = 'C'
+
     STATUS_CHOICES = (
-        ('New', 'New'),
-        ('In progress', 'In Progress'),
-        ('Completed', 'Completed'),
+        (NEW, 'New'),
+        (INPROGRESS, 'In progress'),
+        (COMPLETED, 'Completed'),
     )
 
     title = models.CharField(max_length=100)
     description = models.TextField()
     due_date = models.DateTimeField()
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES)
+    status = models.CharField( max_length=2,choices=STATUS_CHOICES,default=NEW,)
     assigned_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='assigned_tasks')
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='created_tasks')
     created_at = models.DateTimeField(auto_now_add=True)
