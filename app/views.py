@@ -111,7 +111,9 @@ def task_list_view(request):
         status = request.POST.get('status')
         end_date = request.POST.get('end_date')
         assigned_user = request.POST.get('assigned_user')
+        search_filter = request.POST.get('search_filter')
         Flag = True
+        print(search_filter)
         if status and status != "No":
             Flag = False
             tasks = Task.objects.all().filter(status=status)
@@ -122,7 +124,9 @@ def task_list_view(request):
         if assigned_user and assigned_user != "No":
             Flag = False
             tasks = Task.objects.all().filter(assigned_user__username=assigned_user)
-            # pass
+        if search_filter and search_filter != "":
+            Flag = False
+            tasks = Task.objects.filter(description__icontains=search_filter)
         if Flag:
             tasks = Task.objects.all().order_by('due_date', 'status')
             assigned_task_user = []
@@ -184,7 +188,7 @@ def update_task(request, task_id):
             task.due_date = due_date
             task.status = status
             task.save()
-
+            messages.error(request, 'Task Updated Successfully!')
             return redirect('details', task_id=task_id)
 
         else:
