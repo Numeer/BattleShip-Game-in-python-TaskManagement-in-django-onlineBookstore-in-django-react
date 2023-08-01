@@ -17,22 +17,21 @@ Including another URLconf
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
-from django.urls import path, include
-from app import views
+from django.urls import path
+from app.views import *
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', views.signup_page, name='signup'),
-    path('login/', views.login_page, name='login'),
-    path('home/', views.home_page, name='home'),
-    path('logout/', views.logout_page, name='logout'),
-    path('taskCreate/', views.create_task, name='create'),
-    path('taskList', views.task_list_view, name='list'),
-    path('task/<int:task_id>/', views.task_detail, name='details'),
-    path('task/<int:task_id>/update/', views.update_task, name='update'),
-    path('task/<int:task_id>/delete/', views.delete_task, name='delete'),
-    path('task/<int:task_id>/add_comment/', views.add_comment, name='addComment'),
-    # path('task/<int:task_id>/upload/', views.upload_attachment, name='uploadAttachment'),
+    path('home/', HomeView.as_view(), name='home'),
+    path('', signup_page.as_view(), name='signup'),
+    path('login/', login_page.as_view(), name='login'),
+    path('logout/', logout_page.as_view(), name='logout'),
+    path('taskCreate/', create_task.as_view(), name='create'),
+    path('taskList', task_list_view.as_view(), name='list'),
+    path('task/<int:task_id>/', task_detail.as_view(), name='details'),
+    path('task/<int:task_id>/update/', update_task.as_view(), name='update'),
+    path('task/<int:task_id>/delete/', delete_task.as_view(), name='delete'),
+    path('task/<int:task_id>/add_comment/', add_comment.as_view(), name='addComment'),
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

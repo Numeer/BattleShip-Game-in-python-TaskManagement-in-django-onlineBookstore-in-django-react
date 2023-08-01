@@ -1,13 +1,13 @@
 *.log
 *.pot
-*.pyc
+*.py
 __pycache__
 db.sqlite3
 media
 TaskManagement/.env
-TaskManagement/.__pycache
-app/.__pycache
-app/migrations/.__pycache
+TaskManagement/__pycache__
+app/__pycache__
+app/migrations/__pycache__
 # Backup files #
 *.bak 
 
