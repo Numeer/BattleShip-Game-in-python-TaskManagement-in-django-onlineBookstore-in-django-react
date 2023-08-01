@@ -5,7 +5,10 @@ __pycache__
 db.sqlite3
 media
 TaskManagement/.env
-# Backup files # 
+TaskManagement/.__pycache
+app/.__pycache
+app/migrations/.__pycache
+# Backup files #
 *.bak 
 
 # If you are using PyCharm # 
@@ -95,9 +98,9 @@ celerybeat-schedule.*
 *.sage.py 
 
 # Environments 
-.env 
+.env
 .venv 
-env/ 
+env/
 venv/ 
 env.bak/
 venv.bak/ 
