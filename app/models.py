@@ -12,7 +12,7 @@ class CustomUser(User):
     )
 
     role = models.CharField(
-        max_length=1,
+        max_length=10,
         choices=ROLE_CHOICES,
         default=REGULAR,
     )
@@ -32,7 +32,7 @@ class Task(models.Model):
     title = models.CharField(max_length=100)
     description = models.TextField()
     due_date = models.DateTimeField()
-    status = models.CharField( max_length=2,choices=STATUS_CHOICES,default=NEW,)
+    status = models.CharField( max_length=12 ,choices=STATUS_CHOICES,default=NEW,)
     assigned_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='assigned_tasks')
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='created_tasks')
     created_at = models.DateTimeField(auto_now_add=True)
