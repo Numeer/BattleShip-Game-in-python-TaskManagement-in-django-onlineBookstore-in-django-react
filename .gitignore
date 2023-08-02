@@ -9,7 +9,12 @@ TaskManagement/__pycache__
 app/__pycache__
 app/migrations/__pycache__
 # Backup files #
-*.bak 
+*.bak
+
+TaskManagement/.DS_Store
+app/.DS_Store
+.DS_Store
+
 
 # If you are using PyCharm # 
 # User-specific stuff
@@ -21,7 +26,7 @@ app/migrations/__pycache__
 
 # AWS User-specific
 .idea/**/aws.xml
-
+.idea/
 .idea/**/contentModel.xml
 
 # Sensitive or high-churn files
