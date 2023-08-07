@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Create Task {% endblock %}
+{% block content %}
+    <header class="header">
+        <h1 class="logo"><a href="#">Task Management</a></h1>
+        <ul class="main-nav">
+            <li><a href="{% url 'home' %}">Home</a></li>
+            <li><a href="{% url 'logout' %}">Logout</a></li>
+        </ul>
+    </header>
+    <div class="container">
+        {% if error %}
+            <div class="alert alert-danger" role="alert">
+                {{ error }}
+            </div>
+        {% endif %}
+        <h1>Create Task</h1>
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="title">Title:</label>
+                <input type="text" name="title" class="form-control" required>
+            </div>
+
+            <div class="form-group">
+                <label for="desc">Description:</label>
+                <textarea name="desc" rows="4" class="form-control" required></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="dueDate">Due Date:</label>
+                <input type="datetime-local" name="dueDate" class="form-control" required>
+            </div>
+
+            <div class="form-group">
+                <label for="assignTo">Assign To:</label>
+                <select name="assignTo" class="form-control" required>
+                    {% for user in available_users %}
+                        <option value="{{ user.username }}">{{ user.username }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="attachment">Attachment:</label>
+                <input type="file" name="attachment" id="attachment">
+            </div>
+            <button type="submit" class="btn btn-primary">Create Task</button>
+        </form>
+    </div>
+{% endblock %}
+

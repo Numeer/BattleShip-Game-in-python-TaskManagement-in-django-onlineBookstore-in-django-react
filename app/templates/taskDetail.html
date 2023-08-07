@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Task Details {% endblock %}
+{% block content %}
+    <header class="header">
+        <h1 class="logo"><a href="#">Task Management</a></h1>
+        <ul class="main-nav">
+            <li><a href="{% url 'home' %}">Home</a></li>
+            <li><a href="{% url 'logout' %}">Logout</a></li>
+        </ul>
+    </header>
+    {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+    <div class="custom-container mt-4">
+        {% csrf_token %}
+        <h1>Task Detail</h1>
+        <p><strong>Title:</strong> {{ task.title }}</p>
+        <p><strong>Description:</strong> {{ task.description }}</p>
+        <p><strong>Due Date:</strong> {{ task.due_date }}</p>
+        <p><strong>Status:</strong> {{ task.status }}</p>
+        <p><strong>Assigned To:</strong> {{ task.assigned_user }}</p>
+        <p><strong>Assigned By:</strong> {{ task.created_by }}</p>
+
+        <h4>Comments:</h4>
+        <ul>
+            {% for comment in comments %}
+                <li>
+                    <strong>{{ comment.user.username }}:</strong> {{ comment.text }}
+                    <small>{{ comment.created_at }}</small>
+                </li>
+            {% endfor %}
+        </ul>
+        {% if task.assigned_user == request.user %}
+            <h4>Attachments:</h4>
+            <ul>
+                {% for attachment in task.attachments.all %}
+                    {% if attachment.file.url|lower|slice:'-4:' == '.jpg' or attachment.file.url|lower|slice:'-5:' == '.jpeg' or attachment.file.url|lower|slice:'-4:' == '.png' or attachment.file.url|lower|slice:'-4:' == '.gif' or attachment.file.url|lower|slice:'-4:' == '.pdf' %}
+                        <li>
+                            <img src="{{ attachment.file.url }}" alt="{{ attachment.file.name }}" width="200">
+                        </li>
+                    {% else %}
+                        <li>
+                            <a href="{{ attachment.file.url }}" target="_blank">{{ attachment.file.name }}</a>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+            </ul>
+        {% endif %}
+        <form method="post" action="{% url 'addComment' task_id=task.id %}">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="comment">Add Comment:</label>
+                <textarea name="comment" rows="4" class="form-control" required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Add Comment</button>
+        </form>
+
+
+        <br>
+        <a href="{% url 'delete' task.id %}" class="btn btn-danger">Delete Task</a>
+        <a href="{% url 'update' task.id %}" class="btn btn-primary">Update Task</a>
+        <a href="{% url 'list' %}" class="btn btn-secondary">Task List</a>
+    </div>
+{% endblock %}

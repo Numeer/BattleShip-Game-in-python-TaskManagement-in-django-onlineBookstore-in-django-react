@@ -1,0 +1,4 @@
+mysqlclient
+
+Django~=4.2.3
+django-environ~=0.10.0

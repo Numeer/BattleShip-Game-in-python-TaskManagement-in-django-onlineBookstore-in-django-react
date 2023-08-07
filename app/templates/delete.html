@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Confirm Delete{% endblock %}
+
+{% block content %}
+    <header class="header">
+        <h1 class="logo"><a href="#">Task Management</a></h1>
+        <ul class="main-nav">
+            <li><a href="{% url 'home' %}">Home</a></li>
+            <li><a href="{% url 'logout' %}">Logout</a></li>
+        </ul>
+    </header>
+    <h1>Confirm Deletion</h1>
+    <p>Are you sure you want to delete the task "{{ task.title }}"?</p>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit">Delete</button>
+    </form>
+    <br>
+    <button><a href="{% url 'details' task.id %}">Cancel</a></button>
+{% endblock %}
