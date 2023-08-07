@@ -1,6 +1,8 @@
 *.log
 *.pot
-*.py
+#*.py
+app/migrations/__init__.py
+
 __pycache__
 db.sqlite3
 media
