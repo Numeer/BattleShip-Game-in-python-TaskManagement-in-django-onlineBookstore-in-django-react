@@ -65,39 +65,62 @@ class GenreSerializer(serializers.ModelSerializer):
 
 
 class BookSerializer(serializers.ModelSerializer):
-    author = AuthorSerializer()
-    genres = GenreSerializer(many=True)
+    author = serializers.CharField(source='author.name')
+    genres = serializers.SerializerMethodField()
 
     class Meta:
         model = Book
         fields = ['id', 'title', 'author', 'genres']
 
+    def get_genres(self, obj):
+        return [genre.name for genre in obj.genres.all()]
+
 
 class ReviewSerializer(serializers.ModelSerializer):
+    user = serializers.CharField(source='user.username')
+    book = serializers.CharField(source='book.title')
+
     class Meta:
         model = Review
         fields = ['id', 'user', 'book', 'text', 'created_at']
 
 
 class RatingSerializer(serializers.ModelSerializer):
+    user = serializers.CharField(source='user.username')
+    book = serializers.CharField(source='book.title')
+
     class Meta:
         model = Rating
-        fields = ['id', 'user', 'book', 'value']
+        fields = ['id', 'user', 'book', 'rating']
 
 
 class NotificationSerializer(serializers.ModelSerializer):
+    user = serializers.CharField(source='user.username')
+
     class Meta:
         model = Notification
         fields = ['id', 'user', 'event_type', 'message', 'created_at', 'is_read']
 
 
 class CartItemSerializer(serializers.ModelSerializer):
+    user = serializers.CharField(source='user.username')
+    book = serializers.CharField(source='book.title')
+
     class Meta:
         model = CartItem
         fields = ['id', 'user', 'book', 'quantity']
 
 
 class OrderSerializer(serializers.ModelSerializer):
+    user = serializers.CharField(source='user.username')
+    items = serializers.SerializerMethodField()
+    total_price = serializers.DecimalField(max_digits=7, decimal_places=2)
+    is_completed = serializers.BooleanField()
+    created_at = serializers.DateTimeField(format='%Y-%m-%d %H:%M:%S')
+
     class Meta:
         model = Order
-        fields = ['id', 'user', 'item', 'total_price', 'is_completed', 'created_at']
+        fields = ['id', 'user', 'items', 'total_price', 'is_completed', 'created_at']
+
+    def get_items(self, obj):
+        return [item.book.title for item in obj.items.all()]

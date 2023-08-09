@@ -56,7 +56,14 @@ class Review(models.Model):
 class Rating(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     book = models.ForeignKey(Book, on_delete=models.CASCADE)
-    value = models.IntegerField()
+    VALUE_CHOICES = (
+        (1, '1'),
+        (2, '2'),
+        (3, '3'),
+        (4, '4'),
+        (5, '5'),
+    )
+    rating = models.IntegerField(choices=VALUE_CHOICES)
 
 
 class Notification(models.Model):

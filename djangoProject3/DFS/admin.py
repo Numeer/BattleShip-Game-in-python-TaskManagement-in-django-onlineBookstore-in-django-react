@@ -50,8 +50,8 @@ class reviewAdmin(admin.ModelAdmin):
 
 @admin.register(Rating)
 class ratingAdmin(admin.ModelAdmin):
-    list_display = ['id', 'user', 'book', 'value']
-    list_filter = ('user', 'book', 'value')
+    list_display = ['id', 'user', 'book', 'rating']
+    list_filter = ('user', 'book', 'rating')
 
 
 @admin.register(Notification)
@@ -62,11 +62,23 @@ class notificationAdmin(admin.ModelAdmin):
 
 @admin.register(CartItem)
 class CartItemAdmin(admin.ModelAdmin):
-    list_display = ['id', 'user', 'book', 'quantity']
+    list_display = ['id', 'get_user_name', 'get_book_title', 'quantity']
     list_filter = ('user', 'book')
+
+    def get_user_name(self, obj):
+        return obj.user.username
+
+    get_user_name.short_description = 'User'
+
+    def get_book_title(self, obj):
+        return obj.book.title
+
+    get_book_title.short_description = 'Book Title'
 
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
     list_display = ['id', 'user', 'total_price', 'is_completed', 'created_at']
     list_filter = ('user', 'is_completed', 'created_at')
+
+
