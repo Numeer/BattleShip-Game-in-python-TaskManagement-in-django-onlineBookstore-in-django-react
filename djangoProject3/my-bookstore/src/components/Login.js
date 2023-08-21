@@ -1,7 +1,8 @@
-import React, {useState} from 'react';
+import React, {useRef, useState, useEffect} from 'react';
 import axios from 'axios';
 import {Link} from 'react-router-dom';
 import NavBar from "./Navbar";
+import "../styles.css"
 
 const Login = () => {
     const [formData, setFormData] = useState({
@@ -13,7 +14,6 @@ const Login = () => {
     const [success, setSuccess] = useState('');
     const [token, setToken] = useState('');
     const [redirectToNavbar, setRedirectToNavbar] = useState(false);
-
     const handleChange = (e) => {
         setFormData({
             ...formData,
@@ -33,39 +33,31 @@ const Login = () => {
                 sessionStorage.setItem('authToken', response.data.token);
                 sessionStorage.setItem('username', formData.username);
                 setToken(response.data.token);
-                setSuccess('Your Token ');
+                setSuccess('Logged In Successfully');
                 setRedirectToNavbar(true);
             } else {
                 setError('Failed to get token');
             }
         } catch (error) {
-            if (error.response && error.response.data) {
-                const errorMessages = Object.values(error.response.data).flat();
-                setError(errorMessages);
+            if (!error?.response) {
+                setError('No Server Response');
+            } else if (error.response?.status === 400) {
+                setError('Missing Username or Password');
+            } else if (error.response?.status === 401) {
+                setError('Unauthorized');
             } else {
-                setError('Invalid Credentials');
+                setError('Login Failed');
             }
         }
     };
 
     return (
         <>
-            {success && (
-                <div>
-                    {redirectToNavbar ? <NavBar/> : null}
-                    <h3 className="text-success">{success}</h3>
-
-                </div>
-            )}
-            <div className="container mx-6">
+            {redirectToNavbar ? <NavBar/> : null}
+            <div className="container login-container my-5">
+                <h3 className="text-success mt-3">{success}</h3>
                 <h2>Login</h2>
-                {Array.isArray(error) ? (
-                    <div className="text-danger">
-                        {error.map((errorMsg, index) => (
-                            <p key={index}>{errorMsg}</p>
-                        ))}
-                    </div>
-                ) : null}
+                <p className="alert-danger" aria-live="assertive">{error}</p>
 
                 {token && (
                     <div className="alert alert-info" role="alert">
@@ -99,7 +91,7 @@ const Login = () => {
                 </form>
                 <p className="mt-3">
                     Don't have an account? <Link to="/register">
-                    <button className="btn btn-primary">Register</button>
+                    <button className="btn btn-primary btn-lg">Register</button>
                 </Link>
                 </p>
             </div>

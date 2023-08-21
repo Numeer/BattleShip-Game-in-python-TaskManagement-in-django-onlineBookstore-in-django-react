@@ -13,7 +13,7 @@ const Register = () => {
         last_name: '',
     });
 
-    const [errors, setErrors] = useState({});
+    const [error, setErrors] = useState({});
     const [success, setSuccess] = useState('');
     const [token, setToken] = useState('');
     const [redirectToNavbar, setRedirectToNavbar] = useState(false);
@@ -27,7 +27,7 @@ const Register = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setErrors({});
+        setErrors('');
         setSuccess('');
 
         try {
@@ -40,32 +40,37 @@ const Register = () => {
             setRedirectToNavbar(true);
 
         } catch (error) {
-            if (error.response && error.response.data) {
-                setErrors(error.response.data);
+            if (error.response) {
+                const errorData = error.response.data;
+
+                if (errorData.errors) {
+                    setErrors(errorData.errors);
+                } else if (errorData.message) {
+                    setErrors({ global: errorData.message });
+                }
             } else {
-                setErrors({non_field_errors: ['An error occurred during registration.']});
+                setErrors({ global: 'No Server Response' });
             }
         }
     };
 
     return (
         <>
-            {success && (
+            {redirectToNavbar ? <NavBar/> : null}
+            <div className="container login-container my-3">
+                {success && (
                 <div>
-                    {redirectToNavbar ? <NavBar/> : null}
                     <h3 className="text-success">{success}</h3>
-
                 </div>
             )}
-            <div className="container">
-                <h2>Register</h2>
-                {errors.non_field_errors && (
-                    <div className="alert alert-danger">
-                        {errors.non_field_errors.map((errorMsg, index) => (
-                            <p key={index}>{errorMsg}</p>
+                {Object.keys(error).length > 0 && (
+                    <div className="alert alert-danger" role="alert">
+                        {Object.keys(error).map((field, index) => (
+                            <p key={index}>{error[field]}</p>
                         ))}
-                    </div>
-                )}
+                </div>
+            )}
+                <h2>Register</h2>
                 {token && (
                     <div className="alert alert-info" role="alert">
                         Token: {token}

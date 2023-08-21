@@ -1,95 +1,3 @@
-// import React, {Component} from 'react';
-// import {Navbar, Nav, Container, Form, Button, FormControl} from 'react-bootstrap';
-// import {Link} from 'react-router-dom';
-//
-// class NavBar extends Component {
-//     constructor(props) {
-//         super(props);
-//         this.state = {
-//             searchQuery: '',
-//             searchResults: [],
-//         };
-//     }
-//
-//     handleSearchInputChange = (event) => {
-//         this.setState({
-//             searchQuery: event.target.value,
-//         });
-//     };
-//
-//     handleSearchSubmit = (event) => {
-//         event.preventDefault();
-//         const {searchQuery} = this.state;
-//         const token = sessionStorage.getItem('authToken'); // Get the authentication token
-//         if (!token) {
-//             console.error('Authentication token not found.');
-//             return;
-//         }
-//
-//         const searchUrl = `http://localhost:8000/search/?query=${encodeURIComponent(searchQuery)}`;
-//         fetch(searchUrl, {
-//             method: 'GET',
-//             headers: {
-//                 'Authorization': `Token ${token}`, // Include the authentication token
-//                 'Content-Type': 'application/json',
-//             },
-//         })
-//             .then(response => response.json())
-//             .then(data => {
-//                 this.setState({
-//                     searchResults: data,
-//                 })
-//                 console.log('Search results:', data);
-//             })
-//             .catch(error => {
-//                 console.error('Error:', error);
-//             });
-//     };
-//
-//     render() {
-//         const {searchQuery, searchResults} = this.state;
-//         return (
-//             <Navbar bg="dark" variant="dark" expand="lg">
-//                 <Container>
-//                     <Navbar.Brand as={Link} to="/books">
-//                         Bookstore
-//                     </Navbar.Brand>
-//                     <Navbar.Toggle aria-controls="basic-navbar-nav"/>
-//                     <Navbar.Collapse id="basic-navbar-nav">
-//                         <Nav className="me-auto">
-//                             <Nav.Link as={Link} to="/books">
-//                                 Books
-//                             </Nav.Link>
-//                             <Nav.Link as={Link} to="/cartitems">
-//                                 Cart
-//                             </Nav.Link>
-//                         </Nav>
-//                         <Form className="d-flex" onSubmit={this.handleSearchSubmit}>
-//                             <FormControl
-//                                 type="search"
-//                                 placeholder="Search book,author and genre"
-//                                 className="mr-2"
-//                                 value={searchQuery}
-//                                 onChange={this.handleSearchInputChange}
-//                             />
-//                             <Button type="submit" variant="outline-success mx-2">
-//                                 Search
-//                             </Button>
-//                         </Form>
-//                         <Nav>
-//                             <Nav.Link as={Link} to="/user">
-//                                 Profile
-//                             </Nav.Link>
-//                         </Nav>
-//                     </Navbar.Collapse>
-//                 </Container>
-//             </Navbar>
-//         );
-//     }
-// }
-//
-// export default NavBar;
-
 import React from 'react';
 import {Navbar, Nav, Container, Button, Modal} from 'react-bootstrap';
 import {Link} from 'react-router-dom';
@@ -112,7 +20,7 @@ function NavBar() {
         for (const item of cart.items) {
             productData = getProductData(item.id);
             totalPrice += productData.price * item.quantity;
-            ID = productData.Id
+            ID.push(productData.Id);
         }
         setTotalPrice(totalPrice);
         const authToken =  sessionStorage.getItem('authToken');
@@ -173,7 +81,7 @@ function NavBar() {
                                              quantity={currentProduct.quantity}></CartProduct>
                             ))}
 
-                            <h1>Total: {cart.getTotalCost().toFixed(2)}</h1>
+                            <h2>Total Rs: {cart.getTotalCost().toFixed(2)}</h2>
 
                             <Button variant="success" onClick={checkout}>
                                 Purchase items!

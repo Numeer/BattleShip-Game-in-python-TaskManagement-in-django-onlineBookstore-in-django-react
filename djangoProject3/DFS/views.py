@@ -9,7 +9,7 @@ from rest_framework.permissions import IsAuthenticated, IsAdminUser, \
     AllowAny, IsAuthenticatedOrReadOnly, DjangoModelPermissions, DjangoModelPermissionsOrAnonReadOnly
 from rest_framework.filters import SearchFilter
 from rest_framework.authtoken.models import Token
-from django.db.models import Q
+from django.db.models import Q, Count
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import stripe
@@ -50,21 +50,21 @@ def checkout(request):
                 'price': item['id'],
                 'quantity': item['quantity']
             })
-
+            print(item['quantity'])
             order_item = OrderItem.objects.create(
                 order=order,
                 book=book,
                 price=book.price,
                 quantity=item['quantity'],
             )
-
-            session = stripe.checkout.Session.create(
-                payment_method_types=['card'],
-                line_items=line_items,
-                mode='payment',
-                success_url=f'http://localhost:3000/user',
-                cancel_url='http://localhost:3000/cancel',
-            )
+        print(line_items)
+        session = stripe.checkout.Session.create(
+            payment_method_types=['card'],
+            line_items=line_items,
+            mode='payment',
+            success_url=f'http://localhost:3000/login',
+            cancel_url='http://localhost:3000/cancel',
+        )
 
         return JsonResponse({'url': session.url, 'order_id': order.id})
 
@@ -74,13 +74,26 @@ class RegisterView(APIView):
 
     def post(self, request, *args, **kwargs):
         serializer = RegisterSerializer(data=request.data)
+
         if serializer.is_valid():
             user = serializer.save()
             token, created = Token.objects.get_or_create(user=user)
             return Response({
                 "user": serializer.data,
-                "token": token.key}, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                "token": token.key
+            }, status=status.HTTP_201_CREATED)
+
+        response_data = {
+            'message': 'Registration failed.',
+            'errors': serializer.errors
+        }
+        if 'username' in serializer.errors:
+            response_data['errors']['username'] = 'Username is already taken.'
+
+        if 'email' in serializer.errors:
+            response_data['errors']['email'] = 'Email is already in use.'
+
+        return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
 
 class LoginView(APIView):
@@ -235,3 +248,37 @@ def get_order_details(request, order_id):
     }
 
     return JsonResponse(order_data)
+
+
+class GenreRecommendationsView(APIView):
+    def get(self, request, *args, **kwargs):
+        genre_names = request.GET.get('genre', '').split(',')
+        recommended_books = Book.objects.filter(genres__name__in=genre_names).order_by('rating')[:5]
+        recommendations = [
+            {
+                'id': book.id,
+                'title': book.title,
+                'author': book.author.name,
+                'price': book.price,
+                'price_id': book.price_id,
+            }
+            for book in recommended_books
+        ]
+        return Response(recommendations, status=status.HTTP_200_OK)
+
+
+class TopSellingBookView(APIView):
+    def get(self, request, *args, **kwargs):
+        top_selling_book = Book.objects.annotate(order_count=Count('orderitem')).order_by('-order_count').first()
+
+        if top_selling_book:
+            top_selling_book_data = {
+                'id': top_selling_book.id,
+                'title': top_selling_book.title,
+                'author': top_selling_book.author.name,
+                'price': top_selling_book.price,
+                'price_id': top_selling_book.price_id,
+            }
+            return Response(top_selling_book_data, status=status.HTTP_200_OK)
+        else:
+            return Response({"message": "No top-selling book found."}, status=status.HTTP_404_NOT_FOUND)

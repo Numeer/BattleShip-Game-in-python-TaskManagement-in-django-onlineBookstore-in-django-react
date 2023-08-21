@@ -21,7 +21,7 @@ from DFS import views
 from DFS.auth import CustomAuthToken
 from django.conf import settings
 from django.conf.urls.static import static
-from DFS.views import RegisterView, LoginView, LogoutView, SearchView, checkout
+from DFS.views import RegisterView, LoginView, LogoutView, SearchView, checkout, GenreRecommendationsView
 
 router = DefaultRouter()
 router.register('profiles', views.UserProfileView)
@@ -43,6 +43,8 @@ urlpatterns = [
                   path('search/', SearchView.as_view(), name='search'),
                   path('order/<int:order_id>/', views.get_order_details, name='get_order_details'),
                   path('register/', RegisterView.as_view(), name='register'),
+                  path('genre_recommendations/', GenreRecommendationsView.as_view(), name='genre-recommendations'),
+                  path('topSelling/', views.TopSellingBookView.as_view(), name='top-selling-book'),
                   path('login/', LoginView.as_view(), name='login'),
                   path('logout/', LogoutView.as_view(), name='logout'),
                   path('checkout/', views.checkout, name='checkout'),

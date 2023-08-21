@@ -13,7 +13,7 @@ function CartProduct(props) {
         <>
             <h3>{productData.title}</h3>
             <p>{quantity} total</p>
-            <p>${ (quantity * productData.price).toFixed(2) }</p>
+            <p>Rs { (quantity * productData.price).toFixed(2) }</p>
             { productQuantity > 0 ?
                     <>
                         <Form as={Row}>

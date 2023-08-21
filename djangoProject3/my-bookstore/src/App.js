@@ -8,6 +8,7 @@ import BookDetail from "./components/BookDetail";
 import {CartProvider} from "./components/CartContext";
 import Store from "./components/Store";
 import Cancel from "./Cancel";
+import ProductCard from "./components/ProductCard";
 
 class App extends Component {
   constructor() {
