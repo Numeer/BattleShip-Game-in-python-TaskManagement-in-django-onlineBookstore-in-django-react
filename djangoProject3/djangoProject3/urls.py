@@ -21,19 +21,18 @@ from DFS import views
 from DFS.auth import CustomAuthToken
 from django.conf import settings
 from django.conf.urls.static import static
-from DFS.views import RegisterView
-
+from DFS.views import RegisterView, LoginView, LogoutView, SearchView, checkout
 
 router = DefaultRouter()
 router.register('profiles', views.UserProfileView)
+router.register('user', views.UserView, basename='user')
 router.register('userprofiles', views.UserProfileView)
 router.register('authors', views.AuthorView)
 router.register('genres', views.GenreView)
 router.register('books', views.BookView)
-router.register('reviews', views.ReviewView)
-router.register('ratings', views.RatingView)
+router.register('reviews', views.ReviewView, basename='review')
+router.register('ratings', views.RatingView, basename='rating')
 router.register('notifications', views.NotificationView)
-router.register('cartitems', views.CartItemView)
 router.register('orders', views.OrderView)
 
 urlpatterns = [
@@ -41,5 +40,10 @@ urlpatterns = [
                   path('', include(router.urls)),
                   path('auth/', include('rest_framework.urls', namespace='rest_framework')),
                   path('gettoken/', CustomAuthToken.as_view()),
+                  path('search/', SearchView.as_view(), name='search'),
+                  path('order/<int:order_id>/', views.get_order_details, name='get_order_details'),
                   path('register/', RegisterView.as_view(), name='register'),
+                  path('login/', LoginView.as_view(), name='login'),
+                  path('logout/', LogoutView.as_view(), name='logout'),
+                  path('checkout/', views.checkout, name='checkout'),
               ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

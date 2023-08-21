@@ -1,4 +1,3 @@
-from django.shortcuts import render
 from rest_framework.response import Response
 from rest_framework import viewsets, generics, status
 from rest_framework.views import APIView
@@ -8,28 +7,110 @@ from rest_framework.authentication import BasicAuthentication, \
     SessionAuthentication, TokenAuthentication
 from rest_framework.permissions import IsAuthenticated, IsAdminUser, \
     AllowAny, IsAuthenticatedOrReadOnly, DjangoModelPermissions, DjangoModelPermissionsOrAnonReadOnly
-
+from rest_framework.filters import SearchFilter
+from rest_framework.authtoken.models import Token
+from django.db.models import Q
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+import stripe
+from django.conf import settings
+import json
 
 # Create your views here.
+
+stripe.api_key = settings.STRIPE_KEY
+
+
+@csrf_exempt
+def checkout(request):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+    if request.method == 'POST':
+        data = json.loads(request.body.decode('utf-8'))
+        items = data.get('items', [])
+        total_price = data.get('total_price', 0)
+        username = data.get('username')
+        bookId = data.get('bookId', [])
+        try:
+            user = User.objects.get(username=username)
+        except User.DoesNotExist:
+            return JsonResponse({'error': 'User does not exist'})
+
+        order = Order.objects.create(
+            user=user,
+            total_price=total_price,
+        )
+
+        line_items = []
+        if isinstance(bookId, int):
+            bookId = [bookId]
+        for bookId, item in zip(bookId, items):
+            book = Book.objects.get(id=bookId)
+            line_items.append({
+                'price': item['id'],
+                'quantity': item['quantity']
+            })
+
+            order_item = OrderItem.objects.create(
+                order=order,
+                book=book,
+                price=book.price,
+                quantity=item['quantity'],
+            )
+
+            session = stripe.checkout.Session.create(
+                payment_method_types=['card'],
+                line_items=line_items,
+                mode='payment',
+                success_url=f'http://localhost:3000/user',
+                cancel_url='http://localhost:3000/cancel',
+            )
+
+        return JsonResponse({'url': session.url, 'order_id': order.id})
 
 
 class RegisterView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request, *args, **kwargs):
-        # Process the registration form data and create a user
         serializer = RegisterSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            user = serializer.save()
+            token, created = Token.objects.get_or_create(user=user)
+            return Response({
+                "user": serializer.data,
+                "token": token.key}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class LoginView(APIView):
+    def post(self, request, *args, **kwargs):
+        serializer = LoginSerializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.validated_data
+            token, created = Token.objects.get_or_create(user=user)
+            return Response({
+                "user": serializer.data,
+                "token": token.key}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class LogoutView(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, format=None):
+        request.session.flush()
+        return Response({"detail": "Logged out successfully."}, status=status.HTTP_200_OK)
 
 
 class UserView(viewsets.ModelViewSet):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
-    queryset = User.objects.all()
     serializer_class = UserSerializer
+
+    def get_queryset(self):
+        return User.objects.filter(pk=self.request.user.pk)
 
 
 class UserProfileView(viewsets.ModelViewSet):
@@ -58,20 +139,57 @@ class BookView(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     queryset = Book.objects.all()
     serializer_class = BookSerializer
+    filter_backends = [SearchFilter]
+    search_fields = ['^title', '^genres__name', '^author__name']
 
 
 class ReviewView(viewsets.ModelViewSet):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
-    queryset = Review.objects.all()
     serializer_class = ReviewSerializer
+
+    def get_queryset(self):
+        book_id = self.request.query_params.get('book')
+        if book_id:
+            book_id = book_id.rstrip('/')
+            try:
+                book_id = int(book_id)
+            except ValueError:
+                return Review.objects.none()
+
+            return Review.objects.filter(book_id=book_id)
+
+        return Review.objects.all()
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 class RatingView(viewsets.ModelViewSet):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
-    queryset = Rating.objects.all()
     serializer_class = RatingSerializer
+
+    def get_queryset(self):
+        book_id = self.request.query_params.get('book')
+        if book_id:
+            book_id = book_id.rstrip('/')
+            try:
+                book_id = int(book_id)
+            except ValueError:
+                return Rating.objects.none()
+
+            return Rating.objects.filter(book_id=book_id)
+        return Rating.objects.all()
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 class NotificationView(viewsets.ModelViewSet):
@@ -81,15 +199,39 @@ class NotificationView(viewsets.ModelViewSet):
     serializer_class = NotificationSerializer
 
 
-class CartItemView(viewsets.ModelViewSet):
-    authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated]
-    queryset = CartItem.objects.all()
-    serializer_class = CartItemSerializer
-
-
 class OrderView(viewsets.ModelViewSet):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
+
+
+class SearchView(APIView):
+    def get(self, request):
+        query = request.query_params.get('query', '')
+
+        search_results = Book.objects.filter(
+            Q(title__icontains=query) |
+            Q(author__name__icontains=query) |
+            Q(genres__name__icontains=query)
+        )
+
+        serializer = BookSerializer(search_results, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+def get_order_details(request, order_id):
+    try:
+        order = Order.objects.get(pk=order_id)
+    except Order.DoesNotExist:
+        return JsonResponse({'error': 'Order not found'}, status=404)
+    if order.user != request.user:
+        return JsonResponse({'error': 'Unauthorized'}, status=401)
+    order_data = {
+        'id': order.id,
+        'status': order.is_completed,
+        'total_price': order.total_price,
+        'created_at': order.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+    }
+
+    return JsonResponse(order_data)

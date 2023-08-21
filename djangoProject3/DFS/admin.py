@@ -33,7 +33,7 @@ class genreAdmin(admin.ModelAdmin):
 
 @admin.register(Book)
 class bookAdmin(admin.ModelAdmin):
-    list_display = ['id', 'title', 'author', 'display_genres']
+    list_display = ['id', 'title', 'author', 'display_genres', 'price', 'price_id']
     list_filter = ('author', 'genres')
 
     def display_genres(self, obj):
@@ -60,25 +60,19 @@ class notificationAdmin(admin.ModelAdmin):
     list_filter = ('user', 'event_type', 'created_at', 'is_read')
 
 
-@admin.register(CartItem)
-class CartItemAdmin(admin.ModelAdmin):
-    list_display = ['id', 'get_user_name', 'get_book_title', 'quantity']
-    list_filter = ('user', 'book')
-
-    def get_user_name(self, obj):
-        return obj.user.username
-
-    get_user_name.short_description = 'User'
-
-    def get_book_title(self, obj):
-        return obj.book.title
-
-    get_book_title.short_description = 'Book Title'
+class OrderItemInline(admin.TabularInline):
+    model = OrderItem
+    extra = 1
 
 
-@admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
     list_display = ['id', 'user', 'total_price', 'is_completed', 'created_at']
     list_filter = ('user', 'is_completed', 'created_at')
 
 
+class OrderItemAdmin(admin.ModelAdmin):
+    list_display = ('order', 'book', 'price', 'quantity')
+
+
+admin.site.register(Order, OrderAdmin)
+admin.site.register(OrderItem, OrderItemAdmin)

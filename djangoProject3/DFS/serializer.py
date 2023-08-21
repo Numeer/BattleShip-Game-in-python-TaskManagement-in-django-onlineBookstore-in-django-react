@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from .models import *
 from rest_framework.validators import UniqueValidator
 from django.contrib.auth.password_validation import validate_password
+from django.contrib.auth import authenticate
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -40,6 +41,17 @@ class RegisterSerializer(serializers.ModelSerializer):
         return user
 
 
+class LoginSerializer(serializers.Serializer):
+    username = serializers.CharField()
+    password = serializers.CharField()
+
+    def validate(self, data):
+        user = authenticate(**data)
+        if user and user.is_active:
+            return user
+        raise serializers.ValidationError("Incorrect Credentials")
+
+
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
@@ -70,7 +82,7 @@ class BookSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Book
-        fields = ['id', 'title', 'author', 'genres']
+        fields = ['id', 'title', 'author', 'genres', 'price', 'price_id']
 
     def get_genres(self, obj):
         return [genre.name for genre in obj.genres.all()]
@@ -84,6 +96,16 @@ class ReviewSerializer(serializers.ModelSerializer):
         model = Review
         fields = ['id', 'user', 'book', 'text', 'created_at']
 
+    def create(self, validated_data):
+        user = self.context['request'].user
+        book_tit = validated_data['book']
+        text = validated_data['text']
+
+        book = Book.objects.get(title=book_tit['title'])
+
+        review = Review.objects.create(user=user, book=book, text=text)
+        return review
+
 
 class RatingSerializer(serializers.ModelSerializer):
     user = serializers.CharField(source='user.username')
@@ -92,6 +114,22 @@ class RatingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Rating
         fields = ['id', 'user', 'book', 'rating']
+
+    def create(self, validated_data):
+        user = self.context['request'].user
+        book_tit = validated_data['book']
+        rating_value = validated_data['rating']
+
+        book = Book.objects.get(title=book_tit['title'])
+
+        existing_rating = Rating.objects.filter(user=user, book=book).first()
+        if existing_rating:
+            existing_rating.rating = rating_value
+            existing_rating.save()
+            return existing_rating
+
+        rating = Rating.objects.create(user=user, book=book, rating=rating_value)
+        return rating
 
 
 class NotificationSerializer(serializers.ModelSerializer):
@@ -102,25 +140,21 @@ class NotificationSerializer(serializers.ModelSerializer):
         fields = ['id', 'user', 'event_type', 'message', 'created_at', 'is_read']
 
 
-class CartItemSerializer(serializers.ModelSerializer):
-    user = serializers.CharField(source='user.username')
-    book = serializers.CharField(source='book.title')
-
-    class Meta:
-        model = CartItem
-        fields = ['id', 'user', 'book', 'quantity']
-
-
 class OrderSerializer(serializers.ModelSerializer):
     user = serializers.CharField(source='user.username')
-    items = serializers.SerializerMethodField()
     total_price = serializers.DecimalField(max_digits=7, decimal_places=2)
     is_completed = serializers.BooleanField()
     created_at = serializers.DateTimeField(format='%Y-%m-%d %H:%M:%S')
 
     class Meta:
         model = Order
-        fields = ['id', 'user', 'items', 'total_price', 'is_completed', 'created_at']
+        fields = ['id', 'user', 'total_price', 'is_completed', 'created_at']
 
     def get_items(self, obj):
         return [item.book.title for item in obj.items.all()]
+
+
+class OrderItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OrderItem
+        fields = ('book', 'price', 'quantity')
