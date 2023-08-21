@@ -62,10 +62,10 @@ def checkout(request):
             payment_method_types=['card'],
             line_items=line_items,
             mode='payment',
-            success_url=f'http://localhost:3000/login',
+            success_url=f'http://localhost:3000/success',
             cancel_url='http://localhost:3000/cancel',
         )
-
+        print(order.id)
         return JsonResponse({'url': session.url, 'order_id': order.id})
 
 

@@ -64,6 +64,9 @@ function NavBar() {
                                 <Button className="btn btn-link" style={{textDecoration: 'none', color: 'white'}}
                                         onClick={handleShow}>Cart ({productsCount} Items)</Button>
                             </Navbar.Collapse>
+                            <Nav.Link as={Link} to="/login">
+                                Login
+                            </Nav.Link>
                         </Nav>
                     </Navbar.Collapse>
                 </Container>

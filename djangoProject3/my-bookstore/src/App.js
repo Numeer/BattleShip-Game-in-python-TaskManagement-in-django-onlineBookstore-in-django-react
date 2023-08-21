@@ -8,8 +8,7 @@ import BookDetail from "./components/BookDetail";
 import {CartProvider} from "./components/CartContext";
 import Store from "./components/Store";
 import Cancel from "./Cancel";
-import ProductCard from "./components/ProductCard";
-
+import Success from  "./Success"
 class App extends Component {
   constructor() {
     super();
@@ -43,7 +42,8 @@ function AppContent({ authToken}) {
           <Route path="/books" element={<Store />} />
           <Route path="/books/:bookId" element={<BookDetail />} />
           <Route path="cancel" element={<Cancel />} />
-          <Route path="/login" element={<Login />} />
+          <Route path="success" element={<Success/>} />
+          <Route path="/login" element={authToken ? <Navigate to="/books" /> : <Login />} />
           <Route path="/user" element={<UserList />} />
           <Route path="/order/:orderId" element={UserList} />
           <Route path="/register" element={authToken ? <Navigate to="/books" /> : <Register />} />

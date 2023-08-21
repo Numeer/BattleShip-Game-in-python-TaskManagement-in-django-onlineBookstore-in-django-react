@@ -32,7 +32,6 @@ const Register = () => {
 
         try {
             const response = await axios.post('http://localhost:8000/register/', formData);
-            console.log('Registration successful', response.data);
             sessionStorage.setItem('authToken', response.data.token);
             sessionStorage.setItem('username', formData.username);
             setToken(response.data.token);
