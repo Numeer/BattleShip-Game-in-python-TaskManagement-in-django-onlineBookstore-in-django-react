@@ -282,3 +282,17 @@ class TopSellingBookView(APIView):
         else:
             return Response({"message": "No top-selling book found."}, status=status.HTTP_404_NOT_FOUND)
 
+
+@api_view(['GET'])
+# @permission_classes([IsAuthenticated])
+def check_purchase(request, book_id, username):
+    try:
+        user = User.objects.get(username=username)
+        purchased = OrderItem.objects.filter(order__user=user.id, book__id=book_id).exists()
+        return Response({'hasPurchased': purchased})
+    except User.DoesNotExist:
+        return Response({'error': 'User not found'}, status=404)
+    except OrderItem.DoesNotExist:
+        return Response({'hasPurchased': False})
+    except Exception as e:
+        return Response({'error': str(e)}, status=500)

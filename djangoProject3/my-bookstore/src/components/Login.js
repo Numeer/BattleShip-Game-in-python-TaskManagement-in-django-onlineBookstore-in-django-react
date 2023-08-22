@@ -25,13 +25,14 @@ const Login = () => {
         e.preventDefault();
         setError('');
         setSuccess('');
-
         try {
             const response = await axios.post('http://127.0.0.1:8000/gettoken/', formData);
+
 
             if (response.data.token) {
                 sessionStorage.setItem('authToken', response.data.token);
                 sessionStorage.setItem('username', formData.username);
+                sessionStorage.setItem('password', formData.password);
                 setToken(response.data.token);
                 setSuccess('Logged In Successfully');
                 setRedirectToNavbar(true);
@@ -65,6 +66,7 @@ const Login = () => {
                             type="text"
                             className="form-control"
                             name="username"
+                            required
                             value={formData.username}
                             onChange={handleChange}
                         />
@@ -75,12 +77,13 @@ const Login = () => {
                             type="password"
                             className="form-control"
                             name="password"
+                            required
                             value={formData.password}
                             onChange={handleChange}
                         />
                     </div>
                     <button type="submit" className="btn btn-primary">
-                        Get Token
+                        Login
                     </button>
                 </form>
                 <p className="mt-3">

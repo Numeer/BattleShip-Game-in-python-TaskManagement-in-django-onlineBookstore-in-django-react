@@ -113,7 +113,56 @@ function BookDetail() {
             setUserReview('');
         }
     }, [reviews]);
+    const [userHasPurchased, setUserHasPurchased] = useState(false);
+    useEffect(() => {
+        async function fetchBookAndCheckPurchase() {
+            try {
+                const token = sessionStorage.getItem('authToken');
+                if (!token) {
+                    setError('Authentication token not found.');
+                    return;
+                }
+                const username = sessionStorage.getItem('username');
+                const password = sessionStorage.getItem('password');
 
+                const bookUrl = `http://localhost:8000/books/${bookId}/`;
+                const purchaseCheckUrl = `http://localhost:8000/check-purchase/${bookId}/${username}`;
+                console.log(username,password)
+                const user = {
+                    username: username,
+                    password: password
+                }
+                const [bookResponse, purchaseCheckResponse] = await Promise.all([
+                    fetch(bookUrl, {
+                        method: 'GET',
+                        headers: {
+                            'Authorization': `Token ${token}`,
+                            'Content-Type': 'application/json',
+                        },
+                    }),
+                    fetch(purchaseCheckUrl,user,{
+                        method: 'GET',
+                        headers: {
+                            'Authorization': `Token ${token}`,
+                            'Content-Type': 'application/json',
+                            withCredentials: true,
+                        },
+                    }),
+                ]);
+
+                if (bookResponse.ok && purchaseCheckResponse.ok) {
+                    const bookData = await bookResponse.json();
+                    setBook(bookData);
+                    const purchaseCheckData = await purchaseCheckResponse.json();
+                    setUserHasPurchased(purchaseCheckData.hasPurchased);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        fetchBookAndCheckPurchase();
+    }, [bookId]);
     const handleReviewSubmit = async (e) => {
         e.preventDefault();
 
@@ -315,25 +364,32 @@ function BookDetail() {
                             )
                         )}
                     </ul>
-                    <h5>Add/Edit Your Review:</h5>,
-                    <form onSubmit={handleReviewSubmit}>
-                        <div className="mb-3">
+                    {userHasPurchased ? (
+                        <h5>Add/Edit Your Review:</h5>,
+                            <form onSubmit={handleReviewSubmit}>
+                                <div className="mb-3">
                     <textarea
                         className="form-control"
                         rows="4"
                         placeholder="Write your review..."
                         value={userReview}
                         onChange={(e) => setUserReview(e.target.value)}></textarea>
-                        </div>
-                        <button type="submit" className="btn btn-primary">
-                            {userHasReviewed ? 'Edit Review' : 'Submit Review'}
-                        </button>
-                    </form>
-
-                    <h5>Your Rating:</h5>,
-                    <div className="rating-stars">
-                        {generateStars(userRating)}
-                    </div>
+                                </div>
+                                <button type="submit" className="btn btn-primary">
+                                    {userHasReviewed ? 'Edit Review' : 'Submit Review'}
+                                </button>
+                            </form>
+                    ) : (
+                        <p>You need to purchase this book to add a review.</p>
+                    )}
+                    {userHasPurchased ? (
+                        <h5>Your Rating:</h5>,
+                            <div className="rating-stars">
+                                {generateStars(userRating)}
+                            </div>
+                    ) : (
+                        <p>You need to purchase this book to give a rating.</p>
+                    )}
 
                     <h5>Customer Reviews:</h5>
                     {reviews.length > 0 ? (<ul>

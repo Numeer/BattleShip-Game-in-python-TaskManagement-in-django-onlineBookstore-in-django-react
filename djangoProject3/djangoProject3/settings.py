@@ -56,7 +56,16 @@ MIDDLEWARE = [
 ]
 
 CORS_ALLOW_ALL_ORIGINS = True
-
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'withcredentials',  # Add 'withcredentials' to the list of allowed headers
+]
 ROOT_URLCONF = 'djangoProject3.urls'
 
 TEMPLATES = [

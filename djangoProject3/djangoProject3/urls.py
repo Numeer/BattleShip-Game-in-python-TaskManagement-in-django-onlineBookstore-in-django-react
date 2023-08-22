@@ -48,4 +48,6 @@ urlpatterns = [
                   path('login/', LoginView.as_view(), name='login'),
                   path('logout/', LogoutView.as_view(), name='logout'),
                   path('checkout/', views.checkout, name='checkout'),
+                  path('check-purchase/<int:book_id>/<str:username>', views.check_purchase, name='check-purchase'),
+
               ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
