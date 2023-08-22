@@ -58,12 +58,6 @@ const Login = () => {
                 <h3 className="text-success mt-3">{success}</h3>
                 <h2>Login</h2>
                 <p className="alert-danger" aria-live="assertive">{error}</p>
-
-                {token && (
-                    <div className="alert alert-info" role="alert">
-                        Token: {token}
-                    </div>
-                )}
                 <form onSubmit={handleSubmit}>
                     <div className="mb-3">
                         <label className="form-label">Username</label>

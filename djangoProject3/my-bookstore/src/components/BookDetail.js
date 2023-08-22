@@ -3,7 +3,6 @@ import {Link, useParams} from 'react-router-dom';
 import {Button} from "react-bootstrap";
 import {CartContext} from "./CartContext";
 import {useContext} from "react";
-import "../styles.css"
 
 function BookDetail() {
     const [book, setBook] = useState(null);
@@ -68,8 +67,7 @@ function BookDetail() {
             fetchBook();
         },
         [bookId]
-    )
-    ;
+    );
     const totalRating = ratings.reduce((sum, rating) => sum + (rating.rating || 0), 0);
     const averageRating = ratings.length > 0 ? totalRating / ratings.length : 0;
 
@@ -101,6 +99,20 @@ function BookDetail() {
             console.error('Error:', error);
         }
     };
+    const [userHasReviewed, setUserHasReviewed] = useState(false);
+    const [userReviewId, setUserReviewId] = useState(null);
+
+    useEffect(() => {
+        const userReviewData = reviews.find(review => review.user === sessionStorage.getItem('username'));
+        if (userReviewData) {
+            setUserHasReviewed(true);
+            setUserReviewId(userReviewData.id);
+            setUserReview(userReviewData.text);
+        } else {
+            setUserHasReviewed(false);
+            setUserReview('');
+        }
+    }, [reviews]);
 
     const handleReviewSubmit = async (e) => {
         e.preventDefault();
@@ -112,16 +124,34 @@ function BookDetail() {
                 return;
             }
 
-
             const reviewData = {
-                user: sessionStorage.getItem('username'), book: book.title, text: userReview,
+                user: sessionStorage.getItem('username'),
+                book: book.title,
+                text: userReview,
             };
 
-            const response = await fetch(`http://localhost:8000/reviews/?book=${bookId}`, {
-                method: 'POST', headers: {
-                    'Authorization': `Token ${token}`, 'Content-Type': 'application/json',
-                }, body: JSON.stringify(reviewData),
-            });
+            let response;
+
+            if (userHasReviewed) {
+                response = await fetch(`http://localhost:8000/reviews/${userReviewId}/`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Token ${token}`,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(reviewData),
+                });
+            } else {
+                response = await fetch(`http://localhost:8000/reviews/?book=${bookId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Token ${token}`,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(reviewData),
+                });
+            }
+
             if (response.ok) {
                 setUserReview('');
                 window.location.reload();
@@ -199,7 +229,7 @@ function BookDetail() {
             fetchGenreRecommendations();
         }
     }, [book]);
-     const [topSellingBook, setTopSellingBook] = useState(null);
+    const [topSellingBook, setTopSellingBook] = useState(null);
 
     useEffect(() => {
         async function fetchTopSellingBook() {
@@ -252,40 +282,40 @@ function BookDetail() {
                             </Button>
 
                         </div>)}
-                     <ul>
-                                <h4> Recommended </h4>
-                                {genreRecommendations.length > 0 ? (
-                                    genreRecommendations.map((recommendation) => (
-                                        <ul key={recommendation.id} className="recommended-book">
-                                            <strong>Name:</strong> {recommendation.title}<br/>
-                                            <strong>Author:</strong> {recommendation.author}<br/>
-                                            <strong>Price Rs:</strong> {recommendation.price}<br/>
-                                            <Button
-                                                className="btn btn-secondary add-to-cart-btn"
-                                                onClick={() => cart.addOneToCart(recommendation.price_id)}>Add To Cart
-                                            </Button>
-                                            <Link to={`/books/${recommendation.id}`} className="btn btn-primary mx-3">View
-                                                Details
-                                            </Link>
-                                        </ul>
-                                    ))
-                                ) : (
-                                    topSellingBook && (
-                                        <ul className="recommended-book">
-                                            <strong>Name:</strong> {topSellingBook.title}<br/>
-                                            <strong>Author:</strong> {topSellingBook.author}<br/>
-                                            <strong>Price Rs:</strong> {topSellingBook.price}<br/>
-                                            <Button
-                                                className="btn btn-secondary add-to-cart-btn"
-                                                onClick={() => cart.addOneToCart(topSellingBook.price_id)}>Add To Cart
-                                            </Button>
-                                            <Link to={`/books/${topSellingBook.id}`} className="btn btn-primary mx-3">View
-                                                Details</Link>
-                                        </ul>
-                                    )
-                                )}
-                            </ul>
-                    <h5>Add Your Review:</h5>
+                    <ul>
+                        <h4> Recommended </h4>
+                        {genreRecommendations.length > 0 ? (
+                            genreRecommendations.map((recommendation) => (
+                                <ul key={recommendation.id} className="recommended-book">
+                                    <strong>Name:</strong> {recommendation.title}<br/>
+                                    <strong>Author:</strong> {recommendation.author}<br/>
+                                    <strong>Price Rs:</strong> {recommendation.price}<br/>
+                                    <Button
+                                        className="btn btn-secondary add-to-cart-btn"
+                                        onClick={() => cart.addOneToCart(recommendation.price_id)}>Add To Cart
+                                    </Button>
+                                    <Link to={`/books/${recommendation.id}`} className="btn btn-primary mx-3">View
+                                        Details
+                                    </Link>
+                                </ul>
+                            ))
+                        ) : (
+                            topSellingBook && (
+                                <ul className="recommended-book">
+                                    <strong>Name:</strong> {topSellingBook.title}<br/>
+                                    <strong>Author:</strong> {topSellingBook.author}<br/>
+                                    <strong>Price Rs:</strong> {topSellingBook.price}<br/>
+                                    <Button
+                                        className="btn btn-secondary add-to-cart-btn"
+                                        onClick={() => cart.addOneToCart(topSellingBook.price_id)}>Add To Cart
+                                    </Button>
+                                    <Link to={`/books/${topSellingBook.id}`} className="btn btn-primary mx-3">View
+                                        Details</Link>
+                                </ul>
+                            )
+                        )}
+                    </ul>
+                    <h5>Add/Edit Your Review:</h5>,
                     <form onSubmit={handleReviewSubmit}>
                         <div className="mb-3">
                     <textarea
@@ -293,18 +323,18 @@ function BookDetail() {
                         rows="4"
                         placeholder="Write your review..."
                         value={userReview}
-                        onChange={(e) => setUserReview(e.target.value)}
-                    ></textarea>
+                        onChange={(e) => setUserReview(e.target.value)}></textarea>
                         </div>
                         <button type="submit" className="btn btn-primary">
-                            Submit Review
+                            {userHasReviewed ? 'Edit Review' : 'Submit Review'}
                         </button>
                     </form>
 
-                    <h5>Your Rating:</h5>
+                    <h5>Your Rating:</h5>,
                     <div className="rating-stars">
                         {generateStars(userRating)}
                     </div>
+
                     <h5>Customer Reviews:</h5>
                     {reviews.length > 0 ? (<ul>
                         {reviews.map(review => (

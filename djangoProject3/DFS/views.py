@@ -1,3 +1,4 @@
+from rest_framework.decorators import permission_classes, api_view
 from rest_framework.response import Response
 from rest_framework import viewsets, generics, status
 from rest_framework.views import APIView
@@ -238,8 +239,6 @@ def get_order_details(request, order_id):
         order = Order.objects.get(pk=order_id)
     except Order.DoesNotExist:
         return JsonResponse({'error': 'Order not found'}, status=404)
-    if order.user != request.user:
-        return JsonResponse({'error': 'Unauthorized'}, status=401)
     order_data = {
         'id': order.id,
         'status': order.is_completed,
@@ -282,3 +281,4 @@ class TopSellingBookView(APIView):
             return Response(top_selling_book_data, status=status.HTTP_200_OK)
         else:
             return Response({"message": "No top-selling book found."}, status=status.HTTP_404_NOT_FOUND)
+

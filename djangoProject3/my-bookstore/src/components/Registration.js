@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
 import axios from 'axios';
-import {Link} from "react-router-dom";
-import NavBar from "./Navbar";
+import {Link} from 'react-router-dom';
+import NavBar from './Navbar';
 
 const Register = () => {
     const [formData, setFormData] = useState({
@@ -13,7 +13,7 @@ const Register = () => {
         last_name: '',
     });
 
-    const [error, setErrors] = useState({});
+    const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
     const [token, setToken] = useState('');
     const [redirectToNavbar, setRedirectToNavbar] = useState(false);
@@ -27,7 +27,7 @@ const Register = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setErrors('');
+        setError('');
         setSuccess('');
 
         try {
@@ -37,18 +37,16 @@ const Register = () => {
             setToken(response.data.token);
             setSuccess('Registration successful');
             setRedirectToNavbar(true);
-
         } catch (error) {
             if (error.response) {
                 const errorData = error.response.data;
-
                 if (errorData.errors) {
-                    setErrors(errorData.errors);
+                    setError(Object.values(errorData.errors)[0]); // Display the first error
                 } else if (errorData.message) {
-                    setErrors({ global: errorData.message });
+                    setError(errorData.message);
                 }
             } else {
-                setErrors({ global: 'No Server Response' });
+                setError('No Server Response');
             }
         }
     };
@@ -58,23 +56,16 @@ const Register = () => {
             {redirectToNavbar ? <NavBar/> : null}
             <div className="container login-container my-3">
                 {success && (
-                <div>
-                    <h3 className="text-success">{success}</h3>
-                </div>
-            )}
-                {Object.keys(error).length > 0 && (
-                    <div className="alert alert-danger" role="alert">
-                        {Object.keys(error).map((field, index) => (
-                            <p key={index}>{error[field]}</p>
-                        ))}
-                </div>
-            )}
-                <h2>Register</h2>
-                {token && (
-                    <div className="alert alert-info" role="alert">
-                        Token: {token}
+                    <div>
+                        <h3 className="text-success">{success}</h3>
                     </div>
                 )}
+                {error && (
+                    <div className="alert alert-danger" role="alert">
+                        <p>{error}</p>
+                    </div>
+                )}
+                <h2>Register</h2>
                 <form onSubmit={handleSubmit}>
                     <div className="form-group">
                         <label>Username</label>

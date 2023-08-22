@@ -107,6 +107,11 @@ class ReviewSerializer(serializers.ModelSerializer):
         model = Review
         fields = ['id', 'user', 'book', 'text', 'created_at']
 
+    def update(self, instance, validated_data):
+        instance.text = validated_data.get('text', instance.text)
+        instance.save()
+        return instance
+
     def create(self, validated_data):
         user = self.context['request'].user
         book_tit = validated_data['book']
