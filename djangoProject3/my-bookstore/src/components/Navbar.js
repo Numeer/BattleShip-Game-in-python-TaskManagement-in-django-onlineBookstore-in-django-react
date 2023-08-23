@@ -3,27 +3,27 @@ import {Navbar, Nav, Container, Button, Modal} from 'react-bootstrap';
 import {Link} from 'react-router-dom';
 import {useState, useContext} from 'react';
 import {CartContext} from "./CartContext";
-import CartProduct from './CartProduct';
-import {  getProductData } from "./productsStore";
+import CartModalContent from './CartModalContent';
+import {getProductData} from "./productsStore";
 
 function NavBar() {
     const cart = useContext(CartContext);
     const productsCount = cart.items.reduce((sum, product) => sum + product.quantity, 0);
-    const [show, setShow] = useState(false);
+    const [showDialog, setShow] = useState(false);
     const handleClose = () => setShow(false);
     const handleShow = () => setShow(true);
     const [totalPrice, setTotalPrice] = useState(0);
-    let productData=[];
-    let ID=[]
+    let productData = [];
+    let bookIDs = []
     const checkout = async () => {
-        let totalPrice=0;
+        let totalPrice = 0;
         for (const item of cart.items) {
             productData = getProductData(item.id);
             totalPrice += productData.price * item.quantity;
-            ID.push(productData.Id);
+            bookIDs.push(productData.Id);
         }
         setTotalPrice(totalPrice);
-        const authToken =  sessionStorage.getItem('authToken');
+        const authToken = sessionStorage.getItem('authToken');
         const username = sessionStorage.getItem('username');
         await fetch('http://127.0.0.1:8000/checkout/', {
             method: "POST",
@@ -31,7 +31,7 @@ function NavBar() {
                 'Authorization': `Token ${authToken}`,
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({items: cart.items,username: username,bookId: ID, total_price: totalPrice})
+            body: JSON.stringify({items: cart.items, username: username, bookId: bookIDs, total_price: totalPrice})
         }).then((response) => {
             return response.json();
         }).then((response) => {
@@ -40,7 +40,6 @@ function NavBar() {
             }
         });
     }
-
     return (
         <>
             <Navbar bg="dark" variant="dark" expand="lg">
@@ -68,28 +67,12 @@ function NavBar() {
                     </Navbar.Collapse>
                 </Container>
             </Navbar>
-            <Modal show={show} onHide={handleClose}>
+            <Modal show={showDialog} onHide={handleClose}>
                 <Modal.Header closeButton>
                     <Modal.Title>Shopping Cart</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    {productsCount > 0 ?
-                        <>
-                            <p>Items in your cart:</p>
-                            {cart.items.map((currentProduct, idx) => (
-                                <CartProduct key={idx} id={currentProduct.id}
-                                             quantity={currentProduct.quantity}></CartProduct>
-                            ))}
-
-                            <h2>Total Rs: {cart.getTotalCost().toFixed(2)}</h2>
-
-                            <Button variant="success" onClick={checkout}>
-                                Purchase items!
-                            </Button>
-                        </>
-                        :
-                        <h1>There are no items in your cart!</h1>
-                    }
+                    <CartModalContent cart={cart} checkout={checkout}/>
                 </Modal.Body>
             </Modal>
         </>

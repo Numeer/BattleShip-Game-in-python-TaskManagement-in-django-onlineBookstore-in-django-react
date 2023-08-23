@@ -39,7 +39,7 @@ function AppContent({ authToken}) {
       <CartProvider>
        {(!isLoginPage && !isRegisterPage) && <NavBar />}
         <Routes>
-          <Route path="/books" element={<Store />} />
+          <Route path="/books" element={<Store/>} />
           <Route path="/books/:bookId" element={<BookDetail />} />
           <Route path="cancel" element={<Cancel />} />
           <Route path="success" element={<Success/>} />

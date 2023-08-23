@@ -6,9 +6,7 @@ import ProductCard from './ProductCard';
 function Store() {
     const [searchQuery, setSearchQuery] = useState('');
     const [searchResults, setSearchResults] = useState([]);
-    const [error, setError] = useState('');
-    const [success, setSuccess] = useState('');
-
+    const [errorMessage, setErrorMessage] = useState('');
     const handleSearchInputChange = (event) => {
         setSearchQuery(event.target.value);
     };
@@ -17,7 +15,7 @@ function Store() {
         event.preventDefault();
         const token = sessionStorage.getItem('authToken');
         if (!token) {
-            setError('Authentication token not found.');
+            setErrorMessage('Authentication token not found.');
             return;
         }
 
@@ -32,10 +30,10 @@ function Store() {
             .then(response => response.json())
             .then(data => {
                 setSearchResults(data);
-                setError('');
+                setErrorMessage('');
             })
-            .catch(error => {
-                setError('Error occurred while searching.');
+            .catch(errorMessage => {
+                setErrorMessage('Error occurred while searching.');
             });
     };
 

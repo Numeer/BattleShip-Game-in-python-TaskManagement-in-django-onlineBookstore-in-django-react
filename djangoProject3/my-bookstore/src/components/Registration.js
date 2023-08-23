@@ -2,6 +2,7 @@ import React, {useState} from 'react';
 import axios from 'axios';
 import {Link} from 'react-router-dom';
 import NavBar from './Navbar';
+import InputField from './inputField';
 
 const Register = () => {
     const [formData, setFormData] = useState({
@@ -66,67 +67,49 @@ const Register = () => {
                     </div>
                 )}
                 <h2>Register</h2>
-                <form onSubmit={handleSubmit}>
-                    <div className="form-group">
-                        <label>Username</label>
-                        <input
-                            type="text"
-                            className="form-control"
-                            name="username"
-                            value={formData.username}
-                            onChange={handleChange}
-                        />
-                    </div>
-                    <div className="form-group">
-                        <label>Password</label>
-                        <input
-                            type="password"
-                            className="form-control"
-                            name="password"
-                            value={formData.password}
-                            onChange={handleChange}
-                        />
-                    </div>
-                    <div className="form-group">
-                        <label>Confirm Password</label>
-                        <input
-                            type="password"
-                            className="form-control"
-                            name="password2"
-                            value={formData.password2}
-                            onChange={handleChange}
-                        />
-                    </div>
-                    <div className="form-group">
-                        <label>Email</label>
-                        <input
-                            type="email"
-                            className="form-control"
-                            name="email"
-                            value={formData.email}
-                            onChange={handleChange}
-                        />
-                    </div>
-                    <div className="form-group">
-                        <label>First Name</label>
-                        <input
-                            type="text"
-                            className="form-control"
-                            name="first_name"
-                            value={formData.first_name}
-                            onChange={handleChange}
-                        />
-                    </div>
-                    <div className="form-group">
-                        <label>Last Name</label>
-                        <input
-                            type="text"
-                            className="form-control"
-                            name="last_name"
-                            value={formData.last_name}
-                            onChange={handleChange}
-                        />
-                    </div>
+               <form onSubmit={handleSubmit}>
+                    <InputField
+                        label="Username"
+                        type="text"
+                        name="username"
+                        value={formData.username}
+                        onChange={handleChange}
+                    />
+                    <InputField
+                        label="Password"
+                        type="password"
+                        name="password"
+                        value={formData.password}
+                        onChange={handleChange}
+                    />
+                    <InputField
+                        label="Confirm Password"
+                        type="password"
+                        name="password2"
+                        value={formData.password2}
+                        onChange={handleChange}
+                    />
+                    <InputField
+                        label="Email"
+                        type="email"
+                        name="email"
+                        value={formData.email}
+                        onChange={handleChange}
+                    />
+                    <InputField
+                        label="First Name"
+                        type="text"
+                        name="first_name"
+                        value={formData.first_name}
+                        onChange={handleChange}
+                    />
+                    <InputField
+                        label="Last Name"
+                        type="text"
+                        name="last_name"
+                        value={formData.last_name}
+                        onChange={handleChange}
+                    />
                     <button type="submit" className="btn btn-primary my-3">
                         Register
                     </button>

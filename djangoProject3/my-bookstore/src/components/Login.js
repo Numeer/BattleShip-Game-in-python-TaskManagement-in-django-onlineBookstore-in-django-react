@@ -1,8 +1,9 @@
-import React, {useRef, useState, useEffect} from 'react';
+import React, {useState} from 'react';
 import axios from 'axios';
 import {Link} from 'react-router-dom';
 import NavBar from "./Navbar";
 import "../styles.css"
+import InputField from "./inputField";
 
 const Login = () => {
     const [formData, setFormData] = useState({
@@ -10,7 +11,7 @@ const Login = () => {
         password: '',
     });
 
-    const [error, setError] = useState('');
+    const [errorMessage, setErrorMessage] = useState('');
     const [success, setSuccess] = useState('');
     const [token, setToken] = useState('');
     const [redirectToNavbar, setRedirectToNavbar] = useState(false);
@@ -23,7 +24,7 @@ const Login = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setError('');
+        setErrorMessage('');
         setSuccess('');
         try {
             const response = await axios.post('http://127.0.0.1:8000/gettoken/', formData);
@@ -36,18 +37,19 @@ const Login = () => {
                 setToken(response.data.token);
                 setSuccess('Logged In Successfully');
                 setRedirectToNavbar(true);
+
             } else {
-                setError('Failed to get token');
+                setErrorMessage('Failed to get token');
             }
-        } catch (error) {
-            if (!error?.response) {
-                setError('No Server Response');
-            } else if (error.response?.status === 400) {
-                setError('Missing Username or Password');
-            } else if (error.response?.status === 401) {
-                setError('Unauthorized');
+        } catch (errorMessage) {
+            if (!errorMessage?.response) {
+                setErrorMessage('No Server Response');
+            } else if (errorMessage.response?.status === 400) {
+                setErrorMessage('Missing Username or Password');
+            } else if (errorMessage.response?.status === 401) {
+                setErrorMessage('Unauthorized');
             } else {
-                setError('Login Failed');
+                setErrorMessage('Login Failed');
             }
         }
     };
@@ -58,30 +60,22 @@ const Login = () => {
             <div className="container login-container my-5">
                 <h3 className="text-success mt-3">{success}</h3>
                 <h2>Login</h2>
-                <p className="alert-danger" aria-live="assertive">{error}</p>
+                <p className="alert-danger" aria-live="assertive">{errorMessage}</p>
                 <form onSubmit={handleSubmit}>
-                    <div className="mb-3">
-                        <label className="form-label">Username</label>
-                        <input
-                            type="text"
-                            className="form-control"
-                            name="username"
-                            required
-                            value={formData.username}
-                            onChange={handleChange}
-                        />
-                    </div>
-                    <div className="mb-3">
-                        <label className="form-label">Password</label>
-                        <input
-                            type="password"
-                            className="form-control"
-                            name="password"
-                            required
-                            value={formData.password}
-                            onChange={handleChange}
-                        />
-                    </div>
+                    <InputField
+                        label="Username"
+                        type="text"
+                        name="username"
+                        value={formData.username}
+                        onChange={handleChange}
+                    />
+                    <InputField
+                        label="Password"
+                        type="password"
+                        name="password"
+                        value={formData.password}
+                        onChange={handleChange}
+                    />
                     <button type="submit" className="btn btn-primary">
                         Login
                     </button>

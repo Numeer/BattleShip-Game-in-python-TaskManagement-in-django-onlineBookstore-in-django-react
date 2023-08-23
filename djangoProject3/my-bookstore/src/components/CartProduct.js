@@ -3,10 +3,8 @@ import { useContext } from "react";
 import { getProductData } from "./productsStore";
 import { Button, Form, Row, Col } from 'react-bootstrap';
 
-function CartProduct(props) {
+function CartProduct({id, quantity}) {
     const cart = useContext(CartContext);
-    const id = props.id;
-    const quantity = props.quantity;
     const productData = getProductData(id);
     const productQuantity = cart.getProductQuantity(id);
     return (
@@ -32,5 +30,6 @@ function CartProduct(props) {
         </>
     )
 }
+
 
 export default CartProduct;
