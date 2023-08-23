@@ -16,7 +16,7 @@ app/migrations/__pycache__
 TaskManagement/.DS_Store
 app/.DS_Store
 .DS_Store
-
+node_modules
 
 # If you are using PyCharm # 
 # User-specific stuff
