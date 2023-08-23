@@ -8,7 +8,7 @@ function BookDetail() {
     const [book, setBook] = useState(null);
     const [ratings, setRatings] = useState([]);
     const [reviews, setReviews] = useState([]);
-    const [error, setError] = useState(null);
+    const [errorMessage, setErrorMessage] = useState(null);
     const [userRating, setUserRating] = useState(0);
     const [userReview, setUserReview] = useState('');
     const cart = useContext(CartContext);
@@ -19,7 +19,7 @@ function BookDetail() {
                 try {
                     const token = sessionStorage.getItem('authToken');
                     if (!token) {
-                        setError('Authentication token not found.');
+                        setErrorMessage('Authentication token not found.');
                         return;
                     }
 
@@ -78,7 +78,7 @@ function BookDetail() {
         try {
             const token = sessionStorage.getItem('authToken');
             if (!token) {
-                setError('Authentication token not found.');
+                setErrorMessage('Authentication token not found.');
                 return;
             }
 
@@ -95,8 +95,8 @@ function BookDetail() {
                 window.location.reload();
             }
 
-        } catch (error) {
-            console.error('Error:', error);
+        } catch (errorMessage) {
+            setErrorMessage( errorMessage);
         }
     };
     const [userHasReviewed, setUserHasReviewed] = useState(false);
@@ -119,19 +119,13 @@ function BookDetail() {
             try {
                 const token = sessionStorage.getItem('authToken');
                 if (!token) {
-                    setError('Authentication token not found.');
+                    setErrorMessage('Authentication token not found.');
                     return;
                 }
                 const username = sessionStorage.getItem('username');
-                const password = sessionStorage.getItem('password');
 
                 const bookUrl = `http://localhost:8000/books/${bookId}/`;
                 const purchaseCheckUrl = `http://localhost:8000/check-purchase/${bookId}/${username}`;
-                console.log(username,password)
-                const user = {
-                    username: username,
-                    password: password
-                }
                 const [bookResponse, purchaseCheckResponse] = await Promise.all([
                     fetch(bookUrl, {
                         method: 'GET',
@@ -140,7 +134,7 @@ function BookDetail() {
                             'Content-Type': 'application/json',
                         },
                     }),
-                    fetch(purchaseCheckUrl,user,{
+                    fetch(purchaseCheckUrl,username,{
                         method: 'GET',
                         headers: {
                             'Authorization': `Token ${token}`,
@@ -156,8 +150,8 @@ function BookDetail() {
                     const purchaseCheckData = await purchaseCheckResponse.json();
                     setUserHasPurchased(purchaseCheckData.hasPurchased);
                 }
-            } catch (error) {
-                console.error('Error:', error);
+            } catch (errorMessage) {
+                setErrorMessage( errorMessage);
             }
         }
 
@@ -169,7 +163,7 @@ function BookDetail() {
         try {
             const token = sessionStorage.getItem('authToken');
             if (!token) {
-                setError('Authentication token not found.');
+                setErrorMessage('Authentication token not found.');
                 return;
             }
 
@@ -205,15 +199,15 @@ function BookDetail() {
                 setUserReview('');
                 window.location.reload();
             }
-        } catch (error) {
-            console.error('Error:', error);
+        } catch (errorMessage) {
+            setErrorMessage( errorMessage);
         }
     };
     const handleReviewDelete = async (reviewId) => {
         try {
             const token = sessionStorage.getItem('authToken');
             if (!token) {
-                setError('Authentication token not found.');
+                setErrorMessage('Authentication token not found.');
                 return;
             }
 
@@ -227,8 +221,8 @@ function BookDetail() {
             if (response.ok) {
                 setReviews(reviews.filter(review => review.id !== reviewId));
             }
-        } catch (error) {
-            console.error('Error:', error);
+        } catch (errorMessage) {
+            setErrorMessage( errorMessage);
         }
     };
     const generateStars = (rating) => {
@@ -269,8 +263,8 @@ function BookDetail() {
                     const recommendationsData = await response.json();
                     setGenreRecommendations(recommendationsData);
                 }
-            } catch (error) {
-                console.error('Error:', error);
+            } catch (errorMessage) {
+                setErrorMessage( errorMessage);
             }
         }
 
@@ -302,8 +296,8 @@ function BookDetail() {
                     const topSellingBookData = await response.json();
                     setTopSellingBook(topSellingBookData);
                 }
-            } catch (error) {
-                console.error('Error:', error);
+            } catch (errorMessage) {
+                setErrorMessage(errorMessage);
             }
         }
 
@@ -311,8 +305,8 @@ function BookDetail() {
     }, []);
     return (
         <div className="container my-3 book-detail-container">
-            {error ? (
-                <div className="alert alert-danger">{error}</div>
+            {errorMessage ? (
+                <div className="alert alert-danger">{errorMessage}</div>
             ) : (
                 <div>
                     <h2 className="book-detail-title">Book Detail</h2>

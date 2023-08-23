@@ -60,6 +60,10 @@ function UserList() {
                 console.error('Error:', error);
             });
     };
+    const handleLogout = () => {
+        sessionStorage.removeItem('authToken');
+        window.location.assign('/login')
+    };
 
     return (
         <div className="container">
@@ -90,6 +94,7 @@ function UserList() {
                                 <p>No order found with such ID.</p>
                             </div>
                         )}
+                        <button className="btn btn-dark my-3" onClick={handleLogout}>Logout</button>
                     </li>
                 ))}
             </ul>

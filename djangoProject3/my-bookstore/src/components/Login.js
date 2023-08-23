@@ -12,7 +12,7 @@ const Login = () => {
     });
 
     const [errorMessage, setErrorMessage] = useState('');
-    const [success, setSuccess] = useState('');
+    const [successMessage, setSuccessMessage] = useState('');
     const [token, setToken] = useState('');
     const [redirectToNavbar, setRedirectToNavbar] = useState(false);
     const handleChange = (e) => {
@@ -25,7 +25,7 @@ const Login = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setErrorMessage('');
-        setSuccess('');
+        setSuccessMessage('');
         try {
             const response = await axios.post('http://127.0.0.1:8000/gettoken/', formData);
 
@@ -35,7 +35,7 @@ const Login = () => {
                 sessionStorage.setItem('username', formData.username);
                 sessionStorage.setItem('password', formData.password);
                 setToken(response.data.token);
-                setSuccess('Logged In Successfully');
+                setSuccessMessage('Logged In Successfully');
                 setRedirectToNavbar(true);
 
             } else {
@@ -58,7 +58,7 @@ const Login = () => {
         <>
             {redirectToNavbar ? <NavBar/> : null}
             <div className="container login-container my-5">
-                <h3 className="text-success mt-3">{success}</h3>
+                <h3 className="text-success mt-3">{successMessage}</h3>
                 <h2>Login</h2>
                 <p className="alert-danger" aria-live="assertive">{errorMessage}</p>
                 <form onSubmit={handleSubmit}>

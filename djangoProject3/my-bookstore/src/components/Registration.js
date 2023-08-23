@@ -14,8 +14,8 @@ const Register = () => {
         last_name: '',
     });
 
-    const [error, setError] = useState('');
-    const [success, setSuccess] = useState('');
+    const [errorMessage, setErrorMessage] = useState('');
+    const [successMessage, setSuccessMessage] = useState('');
     const [token, setToken] = useState('');
     const [redirectToNavbar, setRedirectToNavbar] = useState(false);
 
@@ -28,26 +28,26 @@ const Register = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setError('');
-        setSuccess('');
+        setErrorMessage('');
+        setSuccessMessage('');
 
         try {
             const response = await axios.post('http://localhost:8000/register/', formData);
             sessionStorage.setItem('authToken', response.data.token);
             sessionStorage.setItem('username', formData.username);
             setToken(response.data.token);
-            setSuccess('Registration successful');
+            setSuccessMessage('Registration successful');
             setRedirectToNavbar(true);
-        } catch (error) {
-            if (error.response) {
-                const errorData = error.response.data;
+        } catch (errorMessage) {
+            if (errorMessage.response) {
+                const errorData = errorMessage.response.data;
                 if (errorData.errors) {
-                    setError(Object.values(errorData.errors)[0]); // Display the first error
+                    setErrorMessage(Object.values(errorData.errors)[0]); // Display the first error
                 } else if (errorData.message) {
-                    setError(errorData.message);
+                    setErrorMessage(errorData.message);
                 }
             } else {
-                setError('No Server Response');
+                setErrorMessage('No Server Response');
             }
         }
     };
@@ -56,14 +56,14 @@ const Register = () => {
         <>
             {redirectToNavbar ? <NavBar/> : null}
             <div className="container login-container my-3">
-                {success && (
+                {successMessage && (
                     <div>
-                        <h3 className="text-success">{success}</h3>
+                        <h3 className="text-success">{successMessage}</h3>
                     </div>
                 )}
-                {error && (
+                {errorMessage && (
                     <div className="alert alert-danger" role="alert">
-                        <p>{error}</p>
+                        <p>{errorMessage}</p>
                     </div>
                 )}
                 <h2>Register</h2>
