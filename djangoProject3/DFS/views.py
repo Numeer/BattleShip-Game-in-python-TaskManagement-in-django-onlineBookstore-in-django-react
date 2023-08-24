@@ -212,7 +212,7 @@ def get_order_details(request, order_id):
         return JsonResponse({'error': 'Order not found'}, status=404)
     order_data = {
         'id': order.id,
-        'status': order.is_completed,
+        'status': order.status,
         'total_price': order.total_price,
         'created_at': order.created_at.strftime('%Y-%m-%d %H:%M:%S'),
     }

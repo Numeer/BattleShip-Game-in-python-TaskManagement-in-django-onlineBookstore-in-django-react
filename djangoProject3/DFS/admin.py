@@ -66,8 +66,8 @@ class OrderItemInline(admin.TabularInline):
 
 
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ['id', 'user', 'total_price', 'is_completed', 'created_at']
-    list_filter = ('user', 'is_completed', 'created_at')
+    list_display = ['id', 'user', 'total_price', 'status', 'created_at']
+    list_filter = ('user', 'status', 'created_at')
 
 
 class OrderItemAdmin(admin.ModelAdmin):

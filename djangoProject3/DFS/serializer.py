@@ -145,13 +145,11 @@ class NotificationSerializer(serializers.ModelSerializer):
 
 class OrderSerializer(serializers.ModelSerializer):
     user = serializers.CharField(source='user.username')
-    total_price = serializers.DecimalField(max_digits=10, decimal_places=2)
-    is_completed = serializers.BooleanField()
     created_at = serializers.DateTimeField(format='%Y-%m-%d %H:%M:%S')
 
     class Meta:
         model = Order
-        fields = ['id', 'user', 'total_price', 'is_completed', 'created_at']
+        fields = ['id', 'user', 'total_price', 'status', 'created_at']
 
     def get_items(self, obj):
         return [item.book.title for item in obj.items.all()]
