@@ -31,7 +31,6 @@ router.register('authors', views.AuthorView)
 router.register('genres', views.GenreView)
 router.register('books', views.BookView)
 router.register('reviews', views.ReviewView, basename='review')
-router.register('ratings', views.RatingView, basename='rating')
 router.register('notifications', views.NotificationView)
 router.register('orders', views.OrderView)
 

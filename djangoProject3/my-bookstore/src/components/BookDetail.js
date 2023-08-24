@@ -4,6 +4,7 @@ import {Button} from "react-bootstrap";
 import {CartContext} from "../context/CartContext";
 import {useContext} from "react";
 import axios from "axios";
+
 function BookDetail() {
     const [book, setBook] = useState(null);
     const [ratings, setRatings] = useState([]);
@@ -12,7 +13,6 @@ function BookDetail() {
     const [userRating, setUserRating] = useState(0);
     const [userReview, setUserReview] = useState('');
     const cart = useContext(CartContext);
-
     const {bookId} = useParams();
     useEffect(() => {
             async function fetchBook() {
@@ -24,42 +24,30 @@ function BookDetail() {
                     }
 
                     const bookUrl = `http://localhost:8000/books/${bookId}/`;
-                    const ratingsUrl = `http://localhost:8000/ratings/?book=${bookId}/`;
                     const reviewsUrl = `http://localhost:8000/reviews/?book=${bookId}/`;
 
-                    const bookResponse = await axios (bookUrl, {
+                    const bookResponse = await fetch(bookUrl, {
                         method: 'GET', headers: {
                             'Authorization': `Token ${token}`, 'Content-Type': 'application/json',
                         },
                     });
 
-                    const ratingsResponse = await axios (ratingsUrl, {
+                    const reviewsResponse = await fetch(reviewsUrl, {
                         method: 'GET', headers: {
                             'Authorization': `Token ${token}`, 'Content-Type': 'application/json',
                         },
                     });
 
-                    const reviewsResponse = await axios (reviewsUrl, {
-                        method: 'GET', headers: {
-                            'Authorization': `Token ${token}`, 'Content-Type': 'application/json',
-                        },
-                    });
-
-                    if (bookResponse.ok && ratingsResponse.ok && reviewsResponse.ok) {
+                    if (bookResponse.ok && reviewsResponse.ok) {
                         const bookData = await bookResponse.json();
-                        const ratingsData = await ratingsResponse.json();
                         const reviewsData = await reviewsResponse.json();
                         setBook(bookData);
-                        setRatings(ratingsData);
                         setReviews(reviewsData);
-                        const userRatingData = ratingsData.find(rating => rating.user === sessionStorage.getItem('username'));
+                        const userRatingData = reviewsData.find(ratings => ratings.user === sessionStorage.getItem('username'));
                         if (userRatingData) {
                             setUserRating(userRatingData.rating);
-                            console.log('I am rating  success')
                         } else {
                             setUserRating(0);
-                            console.log('I am rating error')
-
                         }
                     }
                 } catch
@@ -71,10 +59,8 @@ function BookDetail() {
         },
         [bookId]
     );
-    const totalRating = ratings.reduce((sum, rating) => sum + (rating.rating || 0), 0);
-    const averageRating = ratings.length > 0 ? totalRating / ratings.length : 0;
-
-
+    const totalRating = reviews.reduce((sum, review) => sum + review.rating, 0);
+    const averageRating = reviews.length > 0 ? totalRating / reviews.length : 0;
     const handleRatingChange = async (newRating) => {
         setUserRating(newRating);
 
@@ -84,22 +70,47 @@ function BookDetail() {
                 setErrorMessage('Authentication token not found.');
                 return;
             }
+            const existingReview = reviews.find(review => review.user === sessionStorage.getItem('username'));
 
-            const ratingData = {
-                user: sessionStorage.getItem('username'), book: book.title, rating: newRating,
+            const reviewData = {
+                user: sessionStorage.getItem('username'),
+                book: book.title,
+                text: existingReview ? existingReview.text : '',
+                rating: newRating,
             };
 
-            const response = await fetch(`http://localhost:8000/ratings/?book=${bookId}`, {
-                method: 'POST', headers: {
-                    'Authorization': `Token ${token}`, 'Content-Type': 'application/json',
-                }, body: JSON.stringify(ratingData),
-            });
-            if (response.ok) {
-                window.location.reload();
+            if (existingReview) {
+                const response = await fetch(`http://localhost:8000/reviews/${existingReview.id}/`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Token ${token}`,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(reviewData),
+                });
+                if (response.ok) {
+                    setReviews(prevReviews => prevReviews.map(review => {
+                        if (review.id === existingReview.id) {
+                            return {...review, rating: newRating};
+                        }
+                        return review;
+                    }));
+                }
+            } else {
+                const response = await fetch(`http://localhost:8000/reviews/?book=${bookId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Token ${token}`,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(reviewData),
+                });
+                if (response.ok) {
+                    window.location.reload();
+                }
             }
-
         } catch (errorMessage) {
-            setErrorMessage( errorMessage);
+            setErrorMessage(errorMessage);
         }
     };
     const [userHasReviewed, setUserHasReviewed] = useState(false);
@@ -121,13 +132,11 @@ function BookDetail() {
         async function fetchBookAndCheckPurchase() {
             try {
                 const token = sessionStorage.getItem('authToken');
-                console.log(token)
                 if (!token) {
                     setErrorMessage('Authentication token not found.');
                     return;
                 }
                 const username = sessionStorage.getItem('username');
-                console.log(username)
                 const bookUrl = `http://localhost:8000/books/${bookId}/`;
                 const purchaseCheckUrl = `http://localhost:8000/check-purchase/${bookId}/${username}`;
                 const [bookResponse, purchaseCheckResponse] = await Promise.all([
@@ -151,11 +160,9 @@ function BookDetail() {
                     setBook(bookData);
                     const purchaseCheckData = await purchaseCheckResponse.json();
                     setUserHasPurchased(purchaseCheckData.hasPurchased);
-                    console.log('I am purchase success')
                 }
             } catch (errorMessage) {
-                setErrorMessage( errorMessage);
-                console.log('I am purchaseee error')
+                setErrorMessage(errorMessage);
             }
         }
 
@@ -175,6 +182,7 @@ function BookDetail() {
                 user: sessionStorage.getItem('username'),
                 book: book.title,
                 text: userReview,
+                rating: userRating,
             };
 
             let response;
@@ -201,12 +209,11 @@ function BookDetail() {
 
             if (response.ok) {
                 setUserReview('');
+                setUserRating(0);
                 window.location.reload();
-                console.log('I am review success')
             }
         } catch (errorMessage) {
-            setErrorMessage( errorMessage);
-            console.log('I am review error')
+            setErrorMessage(errorMessage);
         }
     };
     const handleReviewDelete = async (reviewId) => {
@@ -228,7 +235,7 @@ function BookDetail() {
                 setReviews(reviews.filter(review => review.id !== reviewId));
             }
         } catch (errorMessage) {
-            setErrorMessage( errorMessage);
+            setErrorMessage(errorMessage);
         }
     };
     const generateStars = (rating) => {
@@ -268,11 +275,9 @@ function BookDetail() {
                 if (response.ok) {
                     const recommendationsData = await response.json();
                     setGenreRecommendations(recommendationsData);
-                    console.log('I am genre success')
                 }
             } catch (errorMessage) {
-                setErrorMessage( errorMessage);
-                console.log('I am genre  fail')
+                setErrorMessage(errorMessage);
             }
         }
 

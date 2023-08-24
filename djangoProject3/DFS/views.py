@@ -14,6 +14,7 @@ from django.views.decorators.csrf import csrf_exempt
 import stripe
 from django.conf import settings
 import json
+from django.db.models import Avg
 
 # Create your views here.
 
@@ -143,30 +144,17 @@ class ReviewView(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
 
     def get_queryset(self):
-        book_id = self.kwargs.get('book_id')
-
+        book_id = self.request.query_params.get('book')
         if book_id:
+            book_id = book_id.rstrip('/')
+            try:
+                book_id = int(book_id)
+            except ValueError:
+                return Review.objects.none()
+
             return Review.objects.filter(book_id=book_id)
-        return Review.objects.all()
 
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data, context={'request': request})
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-
-class RatingView(viewsets.ModelViewSet):
-    authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated]
-    serializer_class = RatingSerializer
-
-    def get_queryset(self):
-        book_id = self.kwargs.get('book_id')
-
-        if book_id:
-            return Rating.objects.filter(book_id=book_id)
-        return Rating.objects.all()
+            return Review.objects.all()
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data, context={'request': request})
@@ -214,7 +202,7 @@ def get_order_details(request, order_id):
 class GenreRecommendationsView(APIView):
     def get(self, request, *args, **kwargs):
         genre_names = request.GET.get('genre', '').split(',')
-        recommended_books = Book.objects.filter(genres__name__in=genre_names).order_by('rating')[:5]
+        recommended_books = Book.objects.filter(genres__name__in=genre_names).annotate(avg_rating=Avg('review__rating')).order_by('-avg_rating')[:5]
         recommendations = [
             {
                 'id': book.id,
@@ -222,6 +210,7 @@ class GenreRecommendationsView(APIView):
                 'author': book.author.name,
                 'price': book.price,
                 'price_id': book.price_id,
+                'avg_rating': book.avg_rating,
             }
             for book in recommended_books
         ]

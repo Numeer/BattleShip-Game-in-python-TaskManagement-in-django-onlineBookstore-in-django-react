@@ -92,10 +92,11 @@ class ReviewSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Review
-        fields = ['id', 'user', 'book', 'text', 'created_at']
+        fields = ['id', 'user', 'book', 'text', 'rating', 'created_at']
 
     def update(self, instance, validated_data):
         instance.text = validated_data.get('text', instance.text)
+        instance.rating = validated_data.get('rating', instance.rating)
         instance.save()
         return instance
 
@@ -103,36 +104,12 @@ class ReviewSerializer(serializers.ModelSerializer):
         user = self.context['request'].user
         book_title = validated_data['book']
         text = validated_data['text']
+        rating_value = validated_data.get('rating')
 
         book = Book.objects.get(title=book_title['title'])
 
-        review = Review.objects.create(user=user, book=book, text=text)
+        review = Review.objects.create(user=user, book=book, text=text, rating=rating_value)
         return review
-
-
-class RatingSerializer(serializers.ModelSerializer):
-    user = serializers.CharField(source='user.username')
-    book = serializers.CharField(source='book.title')
-
-    class Meta:
-        model = Rating
-        fields = ['id', 'user', 'book', 'rating']
-
-    def create(self, validated_data):
-        user = self.context['request'].user
-        book_title = validated_data['book']
-        rating_value = validated_data['rating']
-
-        book = Book.objects.get(title=book_title['title'])
-
-        existing_rating = Rating.objects.filter(user=user, book=book).first()
-        if existing_rating:
-            existing_rating.rating = rating_value
-            existing_rating.save()
-            return existing_rating
-
-        rating = Rating.objects.create(user=user, book=book, rating=rating_value)
-        return rating
 
 
 class NotificationSerializer(serializers.ModelSerializer):

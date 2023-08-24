@@ -44,14 +44,8 @@ class bookAdmin(admin.ModelAdmin):
 
 @admin.register(Review)
 class reviewAdmin(admin.ModelAdmin):
-    list_display = ['id', 'user', 'book', 'created_at']
+    list_display = ['id', 'user', 'book', 'created_at', 'rating', 'text']
     list_filter = ('user', 'book', 'created_at')
-
-
-@admin.register(Rating)
-class ratingAdmin(admin.ModelAdmin):
-    list_display = ['id', 'user', 'book', 'rating']
-    list_filter = ('user', 'book', 'rating')
 
 
 @admin.register(Notification)

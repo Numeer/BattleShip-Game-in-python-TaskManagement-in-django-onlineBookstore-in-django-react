@@ -53,12 +53,8 @@ class Review(models.Model):
     book = models.ForeignKey(Book, on_delete=models.CASCADE)
     text = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
-
-
-class Rating(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    book = models.ForeignKey(Book, on_delete=models.CASCADE)
     VALUE_CHOICES = (
+        (0, '0'),
         (1, '1'),
         (2, '2'),
         (3, '3'),
