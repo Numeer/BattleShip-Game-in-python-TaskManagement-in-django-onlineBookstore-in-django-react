@@ -42,7 +42,13 @@ INSTALLED_APPS = [
     'DFS',
     'rest_framework.authtoken',
     'corsheaders',
+    'django_filters',
 ]
+REST_FRAMEWORK = {
+    'DEFAULT_FILTER_BACKENDS': (
+        'django_filters.rest_framework.DjangoFilterBackend',
+    ),
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -64,7 +70,7 @@ CORS_ALLOW_HEADERS = [
     'dnt',
     'origin',
     'user-agent',
-    'withcredentials',  # Add 'withcredentials' to the list of allowed headers
+    'withcredentials',
 ]
 ROOT_URLCONF = 'djangoProject3.urls'
 

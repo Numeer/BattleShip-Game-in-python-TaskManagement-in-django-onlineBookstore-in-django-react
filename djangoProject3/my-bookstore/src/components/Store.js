@@ -19,7 +19,7 @@ function Store() {
             return;
         }
 
-        const searchUrl = `http://localhost:8000/search/?query=${encodeURIComponent(searchQuery)}`;
+        const searchUrl = `http://localhost:8000/search/?search=${searchQuery}`;
         fetch(searchUrl, {
             method: 'GET',
             headers: {

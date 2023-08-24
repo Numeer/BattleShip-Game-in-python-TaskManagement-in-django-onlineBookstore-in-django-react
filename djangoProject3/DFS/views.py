@@ -1,7 +1,6 @@
-from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.decorators import permission_classes, api_view
 from rest_framework.response import Response
-from rest_framework import viewsets, generics, status
+from rest_framework import viewsets, generics, status,  filters
 from rest_framework.views import APIView
 from .serializer import *
 from django.contrib.auth.models import User
@@ -15,7 +14,6 @@ from django.views.decorators.csrf import csrf_exempt
 import stripe
 from django.conf import settings
 import json
-import django_filters
 
 # Create your views here.
 
@@ -191,18 +189,11 @@ class OrderView(viewsets.ModelViewSet):
     serializer_class = OrderSerializer
 
 
-class SearchView(APIView):
-    def get(self, request):
-        query = request.query_params.get('query', '')
-
-        search_results = Book.objects.filter(
-            Q(title__icontains=query) |
-            Q(author__name__icontains=query) |
-            Q(genres__name__icontains=query)
-        )
-        print(search_results)
-        serializer = BookSerializer(search_results, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+class SearchView(generics.ListAPIView):
+    search_fields = ['title', 'author__name', 'genres__name']
+    filter_backends = [SearchFilter]
+    queryset = Book.objects.select_related('author').all()
+    serializer_class = BookSerializer
 
 
 def get_order_details(request, order_id):
