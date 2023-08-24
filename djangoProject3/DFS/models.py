@@ -77,11 +77,15 @@ class Notification(models.Model):
 
 
 class Order(models.Model):
+    UNPROCESSED = 'UP'
+    PROCESSING = 'P'
+    ONTHEWAY = 'On way'
+    DELIVERED = 'D'
     COMPLETED_CHOICES = [
-        ('unprocessed', 'Unprocessed'),
-        ('processing', 'Processing'),
-        ('on the way', 'On the Way'),
-        ('delivered', 'Delivered'),
+        (UNPROCESSED, 'Unprocessed'),
+        (PROCESSING, 'Processing'),
+        (ONTHEWAY, 'On the Way'),
+        (DELIVERED, 'Delivered'),
     ]
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)

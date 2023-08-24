@@ -26,30 +26,17 @@ class RegisterSerializer(serializers.ModelSerializer):
         return attrs
 
     def create(self, validated_data):
-        user = User.objects.create(
-            username=validated_data['username'],
-            email=validated_data['email'],
-        )
+        password = validated_data.pop('password')
+        password2 = validated_data.pop('password2')
 
-        user.set_password(validated_data['password'])
-        if 'first_name' in validated_data:
-            user.first_name = validated_data['first_name']
-        if 'last_name' in validated_data:
-            user.last_name = validated_data['last_name']
+        if password != password2:
+            raise serializers.ValidationError({"password": "Password fields didn't match."})
+
+        user = User.objects.create(**validated_data)
+        user.set_password(password)
         user.save()
 
         return user
-
-    def validate_email(self, value):
-        if User.objects.filter(email=value).exists():
-            raise serializers.ValidationError("Email is already in use.")
-        return value
-
-    def validate_username(self, value):
-        if User.objects.filter(username=value).exists():
-            raise serializers.ValidationError("Username is already taken.")
-        return value
-
 
 
 class LoginSerializer(serializers.Serializer):
@@ -114,10 +101,10 @@ class ReviewSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         user = self.context['request'].user
-        book_tit = validated_data['book']
+        book_title = validated_data['book']
         text = validated_data['text']
 
-        book = Book.objects.get(title=book_tit['title'])
+        book = Book.objects.get(title=book_title['title'])
 
         review = Review.objects.create(user=user, book=book, text=text)
         return review
@@ -133,10 +120,10 @@ class RatingSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         user = self.context['request'].user
-        book_tit = validated_data['book']
+        book_title = validated_data['book']
         rating_value = validated_data['rating']
 
-        book = Book.objects.get(title=book_tit['title'])
+        book = Book.objects.get(title=book_title['title'])
 
         existing_rating = Rating.objects.filter(user=user, book=book).first()
         if existing_rating:
@@ -158,7 +145,7 @@ class NotificationSerializer(serializers.ModelSerializer):
 
 class OrderSerializer(serializers.ModelSerializer):
     user = serializers.CharField(source='user.username')
-    total_price = serializers.DecimalField(max_digits=7, decimal_places=2)
+    total_price = serializers.DecimalField(max_digits=10, decimal_places=2)
     is_completed = serializers.BooleanField()
     created_at = serializers.DateTimeField(format='%Y-%m-%d %H:%M:%S')
 

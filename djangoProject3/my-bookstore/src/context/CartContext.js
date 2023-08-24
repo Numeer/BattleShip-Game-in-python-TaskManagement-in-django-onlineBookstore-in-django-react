@@ -1,5 +1,5 @@
 import { createContext, useState } from "react";
-import {  getProductData } from "./productsStore";
+import {  getProductData } from "../components/productsStore";
 
 
 export const CartContext = createContext({
@@ -92,5 +92,6 @@ function addOneToCart(id) {
         </CartContext.Provider>
     )
 }
+
 
 export default CartProvider;

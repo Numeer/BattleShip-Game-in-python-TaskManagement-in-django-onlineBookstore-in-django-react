@@ -16,4 +16,5 @@ function InputField({ label, type, name, value, onChange }) {
     );
 }
 
+
 export default InputField;

@@ -2,7 +2,7 @@ import React from 'react';
 import {Navbar, Nav, Container, Button, Modal} from 'react-bootstrap';
 import {Link} from 'react-router-dom';
 import {useState, useContext} from 'react';
-import {CartContext} from "./CartContext";
+import {CartContext} from "../context/CartContext";
 import CartModalContent from './CartModalContent';
 import {getProductData} from "./productsStore";
 
@@ -13,6 +13,7 @@ function NavBar() {
     const handleClose = () => setShow(false);
     const handleShow = () => setShow(true);
     const [totalPrice, setTotalPrice] = useState(0);
+
     let productData = [];
     let bookIDs = []
     const checkout = async () => {
@@ -78,5 +79,6 @@ function NavBar() {
         </>
     );
 }
+
 
 export default NavBar;

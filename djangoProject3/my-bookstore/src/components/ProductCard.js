@@ -1,5 +1,5 @@
 import {Card, Button,} from 'react-bootstrap';
-import {CartContext} from './CartContext';
+import {CartContext} from '../context/CartContext';
 import {useContext} from 'react';
 import {Link} from "react-router-dom";
 import "../styles.css"
@@ -25,5 +25,6 @@ function ProductCard(props) {
         </Card>
     );
 }
+
 
 export default ProductCard;

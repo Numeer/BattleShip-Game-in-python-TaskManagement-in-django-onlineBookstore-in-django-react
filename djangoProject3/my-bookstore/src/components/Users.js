@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-
+import axios  from "axios";
 function UserList() {
     const [users, setUsers] = useState([]);
     const [orderData, setOrderData] = useState(null);
@@ -11,13 +11,13 @@ function UserList() {
         if (!token) {
             return;
         }
-        fetch('http://localhost:8000/user/', {
+        axios.get('http://localhost:8000/user/', {
             method: 'GET',
             headers: {
                 'Authorization': `Token ${token}`
             }
         })
-            .then(response => response.json())
+            .then(response => response.data)
             .then(data => {
                 setUsers(data);
             })
@@ -32,7 +32,7 @@ function UserList() {
             return;
         }
 
-        fetch(`http://127.0.0.1:8000/order/${orderIdInput}/`, {
+        axios.get(`http://127.0.0.1:8000/order/${orderIdInput}/`, {
             method: 'GET',
             headers: {
                 'Authorization': `Token ${token}`
@@ -48,7 +48,7 @@ function UserList() {
                     setOrderNotFound(true);
                     return null;
                 }
-                return response.json();
+                return response.data;
             })
             .then(orderData => {
                 if (orderData) {
@@ -101,5 +101,6 @@ function UserList() {
         </div>
     );
 }
+
 
 export default UserList;

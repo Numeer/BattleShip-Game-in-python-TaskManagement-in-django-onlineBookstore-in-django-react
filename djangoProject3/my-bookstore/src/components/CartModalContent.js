@@ -3,7 +3,7 @@ import CartProduct from './CartProduct';
 import { Button } from 'react-bootstrap';
 
 function CartModalContent({ cart, checkout }) {
-    const productsCount = cart.items.reduce((sum, product) => sum + product.quantity, 0);
+    const productsCount = cart.items.length;
 
     return (
         <>
@@ -26,5 +26,6 @@ function CartModalContent({ cart, checkout }) {
         </>
     );
 }
+
 
 export default CartModalContent;

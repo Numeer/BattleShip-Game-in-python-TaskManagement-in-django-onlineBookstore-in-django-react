@@ -32,4 +32,6 @@ function getProductData(id) {
 
     return productData;
 }
+
+
 export { productsArray, getProductData };

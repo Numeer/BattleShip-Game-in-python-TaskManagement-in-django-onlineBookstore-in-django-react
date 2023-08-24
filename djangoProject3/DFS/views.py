@@ -1,13 +1,12 @@
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.decorators import permission_classes, api_view
 from rest_framework.response import Response
 from rest_framework import viewsets, generics, status
 from rest_framework.views import APIView
 from .serializer import *
 from django.contrib.auth.models import User
-from rest_framework.authentication import BasicAuthentication, \
-    SessionAuthentication, TokenAuthentication
-from rest_framework.permissions import IsAuthenticated, IsAdminUser, \
-    AllowAny, IsAuthenticatedOrReadOnly, DjangoModelPermissions, DjangoModelPermissionsOrAnonReadOnly
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.permissions import IsAuthenticated,AllowAny
 from rest_framework.filters import SearchFilter
 from rest_framework.authtoken.models import Token
 from django.db.models import Q, Count
@@ -16,6 +15,7 @@ from django.views.decorators.csrf import csrf_exempt
 import stripe
 from django.conf import settings
 import json
+import django_filters
 
 # Create your views here.
 
@@ -85,12 +85,6 @@ class RegisterView(APIView):
             'message': 'Registration failed.',
             'errors': serializer.errors
         }
-        if 'username' in serializer.errors:
-            response_data['errors']['username'] = 'Username is already taken.'
-
-        if 'email' in serializer.errors:
-            response_data['errors']['email'] = 'Email is already in use.'
-
         return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -104,15 +98,6 @@ class LoginView(APIView):
                 "user": serializer.data,
                 "token": token.key}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-class LogoutView(APIView):
-    authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request, format=None):
-        request.session.flush()
-        return Response({"detail": "Logged out successfully."}, status=status.HTTP_200_OK)
 
 
 class UserView(viewsets.ModelViewSet):
@@ -148,7 +133,7 @@ class GenreView(viewsets.ModelViewSet):
 class BookView(viewsets.ModelViewSet):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
-    queryset = Book.objects.all()
+    queryset = Book.objects.select_related('author').all()
     serializer_class = BookSerializer
     filter_backends = [SearchFilter]
     search_fields = ['^title', '^genres__name', '^author__name']
@@ -160,16 +145,10 @@ class ReviewView(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
 
     def get_queryset(self):
-        book_id = self.request.query_params.get('book')
+        book_id = self.kwargs.get('book_id')
+
         if book_id:
-            book_id = book_id.rstrip('/')
-            try:
-                book_id = int(book_id)
-            except ValueError:
-                return Review.objects.none()
-
             return Review.objects.filter(book_id=book_id)
-
         return Review.objects.all()
 
     def create(self, request, *args, **kwargs):
@@ -185,14 +164,9 @@ class RatingView(viewsets.ModelViewSet):
     serializer_class = RatingSerializer
 
     def get_queryset(self):
-        book_id = self.request.query_params.get('book')
-        if book_id:
-            book_id = book_id.rstrip('/')
-            try:
-                book_id = int(book_id)
-            except ValueError:
-                return Rating.objects.none()
+        book_id = self.kwargs.get('book_id')
 
+        if book_id:
             return Rating.objects.filter(book_id=book_id)
         return Rating.objects.all()
 
@@ -226,7 +200,7 @@ class SearchView(APIView):
             Q(author__name__icontains=query) |
             Q(genres__name__icontains=query)
         )
-
+        print(search_results)
         serializer = BookSerializer(search_results, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 

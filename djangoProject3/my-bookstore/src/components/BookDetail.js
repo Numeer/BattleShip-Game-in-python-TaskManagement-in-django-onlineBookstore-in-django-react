@@ -1,9 +1,9 @@
 import React, {useState, useEffect} from 'react';
 import {Link, useParams} from 'react-router-dom';
 import {Button} from "react-bootstrap";
-import {CartContext} from "./CartContext";
+import {CartContext} from "../context/CartContext";
 import {useContext} from "react";
-
+import axios from "axios";
 function BookDetail() {
     const [book, setBook] = useState(null);
     const [ratings, setRatings] = useState([]);
@@ -27,19 +27,19 @@ function BookDetail() {
                     const ratingsUrl = `http://localhost:8000/ratings/?book=${bookId}/`;
                     const reviewsUrl = `http://localhost:8000/reviews/?book=${bookId}/`;
 
-                    const bookResponse = await fetch(bookUrl, {
+                    const bookResponse = await axios (bookUrl, {
                         method: 'GET', headers: {
                             'Authorization': `Token ${token}`, 'Content-Type': 'application/json',
                         },
                     });
 
-                    const ratingsResponse = await fetch(ratingsUrl, {
+                    const ratingsResponse = await axios (ratingsUrl, {
                         method: 'GET', headers: {
                             'Authorization': `Token ${token}`, 'Content-Type': 'application/json',
                         },
                     });
 
-                    const reviewsResponse = await fetch(reviewsUrl, {
+                    const reviewsResponse = await axios (reviewsUrl, {
                         method: 'GET', headers: {
                             'Authorization': `Token ${token}`, 'Content-Type': 'application/json',
                         },
@@ -55,8 +55,11 @@ function BookDetail() {
                         const userRatingData = ratingsData.find(rating => rating.user === sessionStorage.getItem('username'));
                         if (userRatingData) {
                             setUserRating(userRatingData.rating);
+                            console.log('I am rating  success')
                         } else {
                             setUserRating(0);
+                            console.log('I am rating error')
+
                         }
                     }
                 } catch
@@ -114,16 +117,17 @@ function BookDetail() {
         }
     }, [reviews]);
     const [userHasPurchased, setUserHasPurchased] = useState(false);
-    useEffect(() => {
+    useEffect((input, init) => {
         async function fetchBookAndCheckPurchase() {
             try {
                 const token = sessionStorage.getItem('authToken');
+                console.log(token)
                 if (!token) {
                     setErrorMessage('Authentication token not found.');
                     return;
                 }
                 const username = sessionStorage.getItem('username');
-
+                console.log(username)
                 const bookUrl = `http://localhost:8000/books/${bookId}/`;
                 const purchaseCheckUrl = `http://localhost:8000/check-purchase/${bookId}/${username}`;
                 const [bookResponse, purchaseCheckResponse] = await Promise.all([
@@ -134,24 +138,24 @@ function BookDetail() {
                             'Content-Type': 'application/json',
                         },
                     }),
-                    fetch(purchaseCheckUrl,username,{
+                    fetch(purchaseCheckUrl, {
                         method: 'GET',
                         headers: {
                             'Authorization': `Token ${token}`,
                             'Content-Type': 'application/json',
-                            withCredentials: true,
                         },
                     }),
                 ]);
-
                 if (bookResponse.ok && purchaseCheckResponse.ok) {
                     const bookData = await bookResponse.json();
                     setBook(bookData);
                     const purchaseCheckData = await purchaseCheckResponse.json();
                     setUserHasPurchased(purchaseCheckData.hasPurchased);
+                    console.log('I am purchase success')
                 }
             } catch (errorMessage) {
                 setErrorMessage( errorMessage);
+                console.log('I am purchaseee error')
             }
         }
 
@@ -198,9 +202,11 @@ function BookDetail() {
             if (response.ok) {
                 setUserReview('');
                 window.location.reload();
+                console.log('I am review success')
             }
         } catch (errorMessage) {
             setErrorMessage( errorMessage);
+            console.log('I am review error')
         }
     };
     const handleReviewDelete = async (reviewId) => {
@@ -262,9 +268,11 @@ function BookDetail() {
                 if (response.ok) {
                     const recommendationsData = await response.json();
                     setGenreRecommendations(recommendationsData);
+                    console.log('I am genre success')
                 }
             } catch (errorMessage) {
                 setErrorMessage( errorMessage);
+                console.log('I am genre  fail')
             }
         }
 
@@ -282,7 +290,7 @@ function BookDetail() {
                     return;
                 }
 
-                const topSellingBookUrl = `http://localhost:8000/topSelling/`; // Adjust the URL
+                const topSellingBookUrl = `http://localhost:8000/topSelling/`;
 
                 const response = await fetch(topSellingBookUrl, {
                     method: 'GET',
@@ -402,5 +410,6 @@ function BookDetail() {
                 </div>)}
         </div>);
 }
+
 
 export default BookDetail;

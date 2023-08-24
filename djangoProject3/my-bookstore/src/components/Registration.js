@@ -1,22 +1,46 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import axios from 'axios';
-import {Link} from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import NavBar from './Navbar';
 import InputField from './inputField';
 
 const Register = () => {
-    const [formData, setFormData] = useState({
-        username: '',
-        password: '',
-        password2: '',
-        email: '',
-        first_name: '',
-        last_name: '',
-    });
+    const inputFields = [
+        {
+            label: 'Username',
+            type: 'text',
+            name: 'username',
+        },
+        {
+            label: 'Password',
+            type: 'password',
+            name: 'password',
+        },
+        {
+            label: 'Confirm Password',
+            type: 'password',
+            name: 'password2',
+        },
+        {
+            label: 'Email',
+            type: 'email',
+            name: 'email',
+        },
+        {
+            label: 'First Name',
+            type: 'text',
+            name: 'first_name',
+        },
+        {
+            label: 'Last Name',
+            type: 'text',
+            name: 'last_name',
+        },
+    ];
 
+    const [formData, setFormData] = useState({});
     const [errorMessage, setErrorMessage] = useState('');
     const [successMessage, setSuccessMessage] = useState('');
-    const [token, setToken] = useState('');
     const [redirectToNavbar, setRedirectToNavbar] = useState(false);
 
     const handleChange = (e) => {
@@ -35,12 +59,11 @@ const Register = () => {
             const response = await axios.post('http://localhost:8000/register/', formData);
             sessionStorage.setItem('authToken', response.data.token);
             sessionStorage.setItem('username', formData.username);
-            setToken(response.data.token);
             setSuccessMessage('Registration successful');
             setRedirectToNavbar(true);
-        } catch (errorMessage) {
-            if (errorMessage.response) {
-                const errorData = errorMessage.response.data;
+        } catch (error) {
+            if (error.response) {
+                const errorData = error.response.data;
                 if (errorData.errors) {
                     setErrorMessage(Object.values(errorData.errors)[0]); // Display the first error
                 } else if (errorData.message) {
@@ -54,7 +77,7 @@ const Register = () => {
 
     return (
         <>
-            {redirectToNavbar ? <NavBar/> : null}
+            {redirectToNavbar && <NavBar />}
             <div className="container login-container my-3">
                 {successMessage && (
                     <div>
@@ -67,49 +90,17 @@ const Register = () => {
                     </div>
                 )}
                 <h2>Register</h2>
-               <form onSubmit={handleSubmit}>
-                    <InputField
-                        label="Username"
-                        type="text"
-                        name="username"
-                        value={formData.username}
-                        onChange={handleChange}
-                    />
-                    <InputField
-                        label="Password"
-                        type="password"
-                        name="password"
-                        value={formData.password}
-                        onChange={handleChange}
-                    />
-                    <InputField
-                        label="Confirm Password"
-                        type="password"
-                        name="password2"
-                        value={formData.password2}
-                        onChange={handleChange}
-                    />
-                    <InputField
-                        label="Email"
-                        type="email"
-                        name="email"
-                        value={formData.email}
-                        onChange={handleChange}
-                    />
-                    <InputField
-                        label="First Name"
-                        type="text"
-                        name="first_name"
-                        value={formData.first_name}
-                        onChange={handleChange}
-                    />
-                    <InputField
-                        label="Last Name"
-                        type="text"
-                        name="last_name"
-                        value={formData.last_name}
-                        onChange={handleChange}
-                    />
+                <form onSubmit={handleSubmit}>
+                    {inputFields.map((field, index) => (
+                        <InputField
+                            key={index}
+                            label={field.label}
+                            type={field.type}
+                            name={field.name}
+                            value={formData[field.name] || ''}
+                            onChange={handleChange}
+                        />
+                    ))}
                     <button type="submit" className="btn btn-primary my-3">
                         Register
                     </button>
@@ -123,5 +114,6 @@ const Register = () => {
         </>
     );
 };
+
 
 export default Register;
