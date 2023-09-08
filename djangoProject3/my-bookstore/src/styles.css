@@ -1,0 +1,173 @@
+.login-container {
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.product-card {
+    border: none;
+    box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s;
+    background-color: #fff;
+    margin-bottom: 20px;
+}
+
+.product-card:hover {
+    transform: translateY(-5px);
+}
+
+.card-image {
+    height: 200px;
+    overflow: hidden;
+}
+
+.card-image img {
+    object-fit: cover;
+    height: 100%;
+    width: 100%;
+}
+
+.price {
+    font-weight: bold;
+}
+
+.genre {
+    color: #777;
+    margin-bottom: 10px;
+}
+
+.author {
+    color: #555;
+    margin-bottom: 10px;
+}
+
+.view-details,
+.add-to-cart {
+    width: 100%;
+}
+
+.add-to-cart {
+    background-color: #f39c12;
+    border-color: #f39c12;
+}
+
+.add-to-cart:hover {
+    background-color: #e67e22;
+    border-color: #e67e22;
+}
+
+.rating-stars {
+    font-size: 24px;
+    margin-top: 10px;
+}
+
+.rating-stars .star {
+    color: gray;
+    cursor: pointer;
+    transition: color 0.3s;
+}
+
+.rating-stars .star.filled {
+    color: yellow;
+}
+
+.star {
+    color: gray;
+    cursor: pointer;
+}
+
+.star.filled {
+    color: yellow;
+}
+
+.book-detail-container {
+  background-color: #f5f5f5;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.book-detail-title {
+  color: #333;
+  margin-bottom: 20px;
+}
+
+.book-info {
+  padding: 20px;
+  background-color: white;
+  border-radius: 5px;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+}
+
+.add-to-cart-btn {
+  margin-top: 10px;
+}
+
+.rating-stars {
+  display: flex;
+  gap: 5px;
+  font-size: 24px;
+  margin-top: 10px;
+  cursor: pointer;
+}
+
+.rating-stars .star {
+  color: gray;
+}
+
+.rating-stars .star.filled {
+  color: yellow;
+}
+
+.review-form {
+  margin-top: 20px;
+}
+
+.review-form textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  resize: vertical;
+}
+
+.submit-review-btn {
+  margin-top: 10px;
+}
+
+.customer-reviews {
+  margin-top: 20px;
+}
+
+.customer-reviews ul {
+  list-style: none;
+  padding: 0;
+}
+
+.customer-reviews li {
+  border: 1px solid #ccc;
+  padding: 10px;
+  margin-top: 10px;
+  border-radius: 5px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.customer-reviews .btn-link {
+  color: red;
+}
+
+/* Optional: Media queries for responsiveness */
+@media (max-width: 768px) {
+  .book-info {
+    padding: 10px;
+  }
+
+  .rating-stars {
+    font-size: 20px;
+  }
+}
